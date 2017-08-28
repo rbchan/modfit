@@ -16,4 +16,17 @@ where $p(y_i|\beta_0,\beta_1,\sigma^2) = \mathrm{Norm}(y_i|\mu_i,\sigma^2)$ and 
 \section{Joint posterior distribution}
 
 
+\[
+  p(\beta_0,\beta_1,\sigma^2 | {\bf y}) \propto \left\{\prod_{i=1}^n p(y_i|\beta_0,\beta_1,\sigma^2)\right\}p(\beta_0)p(\beta_1)p(\sigma^2)
+\]
+
+
+Full conditional distributions used in Gibbs sampling
+
+
+\[
+  p(\beta_0|\beta_1,\sigma^2,{\bf y})
+\]
+
+
 \end{document}
