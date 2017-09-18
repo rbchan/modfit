@@ -107,16 +107,30 @@ for(iter in 1:niter) {
     ll.y <- sum(dnorm(y, mu, sigma, log=TRUE))
     prior.sigma <- dunif(sigma, 0, 1000, log=TRUE)
 
-    sigma.cand <- rnorm(1, sigma, tune[3])
-    if(sigma.cand>0) {
-        ll.y <- sum(dnorm(y, mu, sigma, log=TRUE))
-        prior.sigma <- dunif(sigma, 0, 1000, log=TRUE)
+    ## ## Symmetric proposal distribution
+    ## sigma.cand <- rnorm(1, sigma, tune[3])
+    ## if(sigma.cand>0) {
+    ##     ll.y <- sum(dnorm(y, mu, sigma, log=TRUE))
+    ##     prior.sigma <- dunif(sigma, 0, 1000, log=TRUE)
 
-        ll.y.cand <- sum(dnorm(y, mu, sigma.cand, log=TRUE))
-        prior.sigma.cand <- dunif(sigma.cand, 0, 1000, log=TRUE)
-    }
+    ##     ll.y.cand <- sum(dnorm(y, mu, sigma.cand, log=TRUE))
+    ##     prior.sigma.cand <- dunif(sigma.cand, 0, 1000, log=TRUE)
+    ## }
+    ##    mhr <- exp((ll.y.cand+prior.sigma.cand) - (ll.y+prior.sigma))
 
-    mhr <- exp((ll.y.cand+prior.sigma.cand) - (ll.y+prior.sigma))
+    ## Symmetric proposal distribution
+    sigma.cand <- rlnorm(1, log(sigma), tune[3])
+    ll.y <- sum(dnorm(y, mu, sigma, log=TRUE))
+    prior.sigma <- dunif(sigma, 0, 1000, log=TRUE)
+    prop.sigma <- dlnorm(sigma, log(sigma.cand), tune[3], log=TRUE)
+
+    ll.y.cand <- sum(dnorm(y, mu, sigma.cand, log=TRUE))
+    prior.sigma.cand <- dunif(sigma.cand, 0, 1000, log=TRUE)
+    prop.sigma.cand <- dlnorm(sigma.cand, log(sigma), tune[3], log=TRUE)
+
+    mhr <- exp((ll.y.cand+prior.sigma.cand+prop.sigma) -
+               (ll.y+prior.sigma+prop.sigma.cand))
+
     if(runif(1) < mhr) {
         sigma <- sigma.cand
     }
@@ -138,6 +152,12 @@ mc1 <- lm.gibbs(data=y, niter=1000,
                 start=c(0,0,1),
                 tune=c(0.1, 0.1, 0.1))
 
+str(mc1)
+
+summary(mc1)
+
+apply(mc1, 2, sd)
+
 
 plot(mc1[,"beta0"], type="l")
 hist(mc1[,"beta0"])
@@ -147,4 +167,51 @@ hist(mc1[,"beta0"])
 library(coda)
 
 
-plot(mcmc(mc1))
+mc1.1 <- mcmc(mc1)
+
+mc1.1t <- window(mc1.1, start=101, thin=1)
+
+summary(mc1.1t)
+
+rejectionRate(mc1.1t) ## Should be somewhere between 20 and 40 percent
+
+cbind(Est=mles, SE=SEs)
+
+
+plot(mc1.1t)
+
+
+
+
+
+
+## Bayesian inference with JAGS
+
+
+library(rjags)
+
+jd <- list(y=y, x=x, n=n)
+str(jd)
+
+jp <- c("beta0", "beta1", "sigma")
+jp
+
+ji <- function() {
+    list(beta0=rnorm(1), beta1=rnorm(1), sigmaSq=runif(1))
+}
+
+ji()
+
+
+## Compile the model and adapt
+jm <- jags.model("lm-JAGS.jag", data=jd, inits=ji, n.chains=3,
+                 n.adapt=1000)
+
+jc1 <- coda.samples(jm, jp, n.iter=1000)
+
+plot(jc1)
+
+
+summary(jc1)
+
+summary(mc1.1t)
