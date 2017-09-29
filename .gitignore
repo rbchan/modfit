@@ -3,3 +3,4 @@ keys/
 *.log
 *.pdf
 *.out
+*.DS_Store
