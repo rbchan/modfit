@@ -1,0 +1,42 @@
+\documentclass[12pt]{article}
+
+
+
+\begin{document}
+
+
+\section{Likelihood}
+
+The likelihood is the product of the $n$ Gaussian densities:
+\[
+  L(\beta_0,\beta_1,\sigma^2; {\bf y}) = \prod_{i=1}^n p(y_i|\beta_0,\beta_1,\sigma^2)
+\]
+where $p(y_i|\beta_0,\beta_1,\sigma^2) = \mathrm{Norm}(y_i|\mu_i,\sigma^2)$ and $\mu_i = \beta_0 + \beta_1x_i$
+
+
+\section{Joint posterior distribution}
+
+
+\[
+  p(\beta_0,\beta_1,\sigma^2 | {\bf y}) \propto \left\{\prod_{i=1}^n p(y_i|\beta_0,\beta_1,\sigma^2)\right\}p(\beta_0)p(\beta_1)p(\sigma^2)
+\]
+where, as before, $p(y_i|\beta_0,\beta_1,\sigma^2) = \mathrm{Norm}(y_i|\mu_i,\sigma^2)$. All other probability distributions are priors. Here are three possibilities: $p(\beta_0) = \mathrm{Norm}(0,1000000)$, $p(\beta_1) = \mathrm{Norm}(0,1000000)$, $p(\sigma) = \mathrm{Unif}(0,1000)$. 
+
+Full conditional distributions used in Gibbs sampling
+
+
+\[
+  p(\beta_0|\beta_1,\sigma^2,{\bf y}) \propto \left\{\prod_{i=1}^n p(y_i|\beta_0,\beta_1,\sigma^2)\right\}p(\beta_0)
+\]
+which can be sampled from using the M-H algorighm. For example, propose $\beta_0^{*} \sim \mathrm{Norm}(\beta_0, tune_1)$ and accept if ...
+
+\[
+  p(\beta_1|\beta_0,\sigma^2,{\bf y}) \propto \left\{\prod_{i=1}^n p(y_i|\beta_0,\beta_1,\sigma^2)\right\}p(\beta_1)
+\]
+
+\[
+  p(\sigma^2|\beta_0,\sigma^2,{\bf y}) \propto \left\{\prod_{i=1}^n p(y_i|\beta_0,\beta_1,\sigma^2)\right\}p(\sigma^2)
+\]
+
+
+\end{document}
