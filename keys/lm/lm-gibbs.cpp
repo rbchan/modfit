@@ -1,7 +1,23 @@
 #include <Rcpp.h>
 
 // [[Rcpp::export]]
-Rcpp::NumericMatrix distmat(Rcpp::NumericMatrix s, Rcpp::NumericMatrix x) {
+arma::mat distmat(arma::mat y, arma::mat X, int niter, arma::vec tune) {
+
+  int p = X.n_cols;
+  arma::vec beta = arma::randn<arma::vec>(p);
+  arma::double sig=0.0;
+
+  arma::vec mu = X*beta;
+  arma::vec ll_y = sum(Rcpp::dnorm(y, mu, sig, true))
+
+  for(int i=0; i<niter, i++) {
+    // sample beta0
+    beta_cand = beta;
+    beta_cand(0) = Rcpp::rnorm(1,beta(0),tune(0));
+
+
+  }
+
 
   int M = s.nrow();
   int J = x.nrow();
