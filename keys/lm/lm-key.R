@@ -583,13 +583,18 @@ plot(mcmc(mc.evenfaster))
 
 
 library(Rcpp)
+library(RcppArmadillo)
 
 sourceCpp(file="lm-gibbs.cpp")
 
 
 
+ls()
 
 
+
+
+## All of this could be made even more efficient by using conguate priors and sampling directly from the full conditional distributions
 
 
 
