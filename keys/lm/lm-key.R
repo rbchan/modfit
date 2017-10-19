@@ -587,14 +587,14 @@ library(RcppArmadillo)
 
 sourceCpp(file="lm-gibbs.cpp")
 
+X <- model.matrix(~x)
 
+mc.fastest <- lm_gibbsCpp(y=y, X=X, niter=1000, tune=c(0.1,0.1,0.1))
+
+
+plot(mcmc(mc.fastest))
 
 ls()
-
-
-
-
-## All of this could be made even more efficient by using conguate priors and sampling directly from the full conditional distributions
 
 
 
@@ -603,3 +603,22 @@ ls()
 
 
 library(benchmark)
+
+
+
+## C++ version is 4-7x faster than R implementations
+benchmark(
+    lm.gibbs(y=y, niter=10000,start=c(0,0,1), tune=c(0.1,0.1,0.1)),
+    lm.gibbs.faster(y=y, niter=10000,start=c(0,0,1), tune=c(0.1,0.1,0.1)),
+    lm.gibbs.evenfaster(y=y, niter=10000,start=c(0,0,1), tune=c(0.1,0.1,0.1)),
+    lm_gibbsCpp(y=y, X=X, niter=10000, tune=c(0.1,0.1,0.1)),
+    columns=c("test", "elapsed", "relative"), replications=10)
+
+
+
+
+## All of this could be made even more efficient by using conguate
+## priors and sampling directly from the full conditional
+## distributions
+
+
