@@ -44,27 +44,29 @@ nll(starts2)
 
 
 
-## Minimize negative log-likelihood
+## Instead of guessing our way to the maximum likelihood estimates,
+## we can minimize the negative log-likelihood using 'optim'
 
 # The optim function minimizes the neg log-like using 'starts' as inital values
-# Hessian = TRUE returns the Hessian matrix (2nd order partial derivatives)
+# hessian = TRUE returns the Hessian matrix (2nd order partial derivatives)
 fm <- optim(starts, nll, hessian=TRUE)
 fm
 
-# $par returns the best set of parameters found for the maximum likelihood estimator (mles)
+# $par has the maximum likelihood estimator (mles)
 mles <- fm$par
 
 # Obtain the variance-covariance matrix by inverting the Hessian matrix
 vcov <- solve(fm$hessian)
 
-# Standard errors taken from the square-root of the diagonals on the variance-covariance matrix
+# Standard errors taken from the square-root of the diagonals of the vcov matrix
 SEs <- sqrt(diag(vcov))
 
+## Estimates and SEs
 cbind(Est=mles, SE=SEs)
 
 
-###################################################################################################
-###################################################################################################
+####################################################################################
+####################################################################################
 
 ## Bayesian inference
 
@@ -72,7 +74,7 @@ cbind(Est=mles, SE=SEs)
 ## Gibbs sampler
 
 
-# Create a function "lm.gibbs" that uses input data to run n iterations using
+# Create a function "lm.gibbs" that uses input data to run niter iterations using
 # starting values and tuning values
 lm.gibbs <- function(y, x, niter=10000,
                      start, tune) {
@@ -91,31 +93,31 @@ for(iter in 1:niter) {
 
     ## Sample from p(beta0|dot)
     mu <- beta0 + beta1*x
-    # Obtain the neg log-likelihood of the reponse variable distribution
-    # Assume a normal distribution
+    ## Obtain the neg log-likelihood of the reponse variable distribution
+    ## Assume a normal distribution
     ll.y <- sum(dnorm(y, mu, sigma, log=TRUE))
     # Prior probability of beta0
     prior.beta0 <- dnorm(beta0, 0, 1000, log=TRUE)
 
-    # Propose a candidate value for each beta0 based around the known value of beta0
-    # Tuning value allows for exploration of values around beta0 by oscillating values above and below beta0
-    # Tuning is a trial and error process and comes into play when assessing rejection rates
+    ## Propose a candidate value for each beta0 based around the current value of beta0
+    ## Tuning value allows for exploration of posterior using a random walk approach
+    ## Tuning is a trial and error process. Acceptance rates should be around 30%
+    ## Possible to do automatic (adaptive) tuning, but often not worth the extra coding
     beta0.cand <- rnorm(1, beta0, tune[1])
-    # Update mu for the candidate beta0
+    ## Update mu for the candidate beta0
     mu.cand <- beta0.cand + beta1*x
-    # Re-evaluate the summation of log-like of the reponse distribution use the candidate mu
+    ## Re-evaluate the log-like using the candidate mu
     ll.y.cand <- sum(dnorm(y, mu.cand, sigma, log=TRUE))
-    # Obtain a new prior probabilty for the candidate beta0
+    ## Obtain a new prior probabilty for the candidate beta0
     prior.beta0.cand <- dnorm(beta0.cand, 0, 1000, log=TRUE)
 
-    # Metropolis-Hastings Ratio is a Markov chain Monte Carlo (MCMC) method used to
-    # obtain a sequence of random sample from a probabilty distribution
+    ## Metropolis-Hastings algorithm is a MCMC method used to
+    ## obtain a sequence of (non-independent) samples from a probabilty distribution
 
-    # P(data | candidate beta0) * P(candidate beta0) / P(data | beta0) * P(beta0)
+    ## P(data | candidate beta0) * P(candidate beta0) / P(data | beta0) * P(beta0)
     mhr <- exp((ll.y.cand+prior.beta0.cand) - (ll.y+prior.beta0))
 
-    # If the MH ratio is greater than random deviates of uniform distribution than
-    # update beta0 with the new candidate beta0
+    ## If the MH ratio is greater than U(0,1) then accept beta0.cand
     if(runif(1) < mhr) {
         beta0 <- beta0.cand
     }
@@ -158,6 +160,7 @@ for(iter in 1:niter) {
     # Example: sigma cannot be negative
     # Use the log normal distribution to ensure positive sigma values
     sigma.cand <- rlnorm(1, log(sigma), tune[3])
+    mu <- beta0 + beta1*x
     ll.y <- sum(dnorm(y, mu, sigma, log=TRUE))
     # Prior probability distribution of sigma
     prior.sigma <- dunif(sigma, 0, 1000, log=TRUE)
@@ -243,8 +246,8 @@ cbind(Est=mles, SE=SEs)
 rejectionRate(mc1.1t)
 
 
-###################################################################################################
-###################################################################################################
+######################################################################################
+######################################################################################
 
 ## Bayesian inference with JAGS
 
@@ -281,17 +284,12 @@ summary(jc1)
 summary(mc1.1t)
 
 
-###################################################################################################
-###################################################################################################
+######################################################################################
+######################################################################################
 
 ## Faster version of lm.gibbs
-## This one avoids redundant likelihood (and other) calculations by updating ll.y and mu
+## Avoid redundant likelihood (and other) calculations by updating ll.y and mu
 
-## Gibbs sampler
-
-
-# Create a function "lm.gibbs" that uses input data to run n iterations using
-# starting values and tuning values
 lm.gibbs.faster <- function(y, x, niter=10000,
                             start, tune) {
 
@@ -433,17 +431,11 @@ plot(mcmc(mc.faster))
 
 
 
-###################################################################################################
-###################################################################################################
+######################################################################################
+######################################################################################
 
 ## Even faster version of lm.gibbs
 ## This one uses matrix multiplication to compute linear predictor
-
-## Gibbs sampler
-
-
-# Create a function "lm.gibbs" that uses input data to run n iterations using
-# starting values and tuning values
 lm.gibbs.evenfaster <- function(y, X, niter=10000,
                                 start, tune) {
 
@@ -469,28 +461,17 @@ lm.gibbs.evenfaster <- function(y, X, niter=10000,
     # Prior probability of beta0
     prior.beta0 <- dnorm(beta0, 0, 1000, log=TRUE)
 
-    # Propose a candidate value for each beta0 based around the known value of beta0
-    # Tuning value allows for exploration of values around beta0 by oscillating values above and below beta0
-    # Tuning is a trial and error process and comes into play when assessing rejection rates
     beta0.cand <- rnorm(1, beta0, tune[1])
     # Update mu for the candidate beta0
 ##    mu.cand <- beta0.cand + beta1*x
     mu.cand <- X %*% c(beta0.cand, beta1)
 
-    # Re-evaluate the summation of log-like of the reponse distribution use the candidate mu
     ll.y.cand <- sum(dnorm(y, mu.cand, sigma, log=TRUE))
-    # Obtain a new prior probabilty for the candidate beta0
     prior.beta0.cand <- dnorm(beta0.cand, 0, 1000, log=TRUE)
-
-    # Metropolis-Hastings Ratio is a Markov chain Monte Carlo (MCMC) method used to
-    # obtain a sequence of random sample from a probabilty distribution
 
     # P(data | candidate beta0) * P(candidate beta0) / P(data | beta0) * P(beta0)
     mhr <- exp((ll.y.cand+prior.beta0.cand) - (ll.y+prior.beta0))
 
-    # If the MH ratio is greater than random deviates of uniform distribution than
-    # update beta0 with the new candidate beta0
-    # update likelihood with new candidate likelihood
     if(runif(1) < mhr) {
       beta0 <- beta0.cand
       ll.y <- ll.y.cand
@@ -581,24 +562,6 @@ plot(mcmc(mc.evenfaster))
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 ## Make things very fast with C++
 ## Take a look at the C++ code in 'lm-gibbs.cpp'
 
@@ -642,3 +605,81 @@ benchmark(
 ## distributions (instead of using MH algorithm)
 
 
+
+
+
+
+
+
+
+
+
+## Running multiple chains in parallel
+
+
+
+
+library(parallel)
+
+
+## Use up to 3 cores
+nCores <- min(detectCores()-1, 3)
+
+
+## Make a cluster
+cl <- makeCluster(nCores)
+
+
+## Send objects to each core
+clusterExport(cl, c("lm.gibbs", "lm_gibbsCpp", "y", "x", "X"))
+
+
+## Set RNG seeds
+clusterSetRNGStream(cl, 3479)
+
+
+## Run code in {} on each core
+## Won't work with C++ function unless you compile it on each core. See below.
+out <- clusterEvalQ(cl, {
+##    mc <- lm_gibbsCpp(y=y, X=X, niter=10000, tune=c(0.1,0.1,0.1))
+    mc <- lm.gibbs(y=y, x=x, niter=1000,
+                   start=c(0,0,1), tune=c(0.1,0.1,0.1))
+    library(coda)
+    return(mcmc(mc))
+})
+
+
+library(coda)
+mcl <- as.mcmc.list(out)
+
+plot(mcl)
+
+
+
+
+
+
+
+
+## Using C++ version
+## Compile time makes this option slow. There must be a better way.
+out <- clusterEvalQ(cl, {
+    library(Rcpp)
+    sourceCpp("lm-gibbs.cpp")
+    mc <- lm_gibbsCpp(y=y, X=X, niter=10000, tune=c(0.1,0.1,0.1))
+    library(coda)
+    return(mcmc(mc))
+})
+
+
+library(coda)
+mcl <- as.mcmc.list(out)
+
+
+
+
+
+
+
+
+stopCluster(cl) # good practice
