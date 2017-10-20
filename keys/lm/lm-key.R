@@ -1,27 +1,28 @@
 # Generalized key to evaluating the likelihood equations and joint posterior
 # probabilites for a simple linear model with 2 betas
 
-# Generate some random data
+## Simulate data
 n <- 100
 x <- rnorm(n) # Covariate
 beta0 <- -1
 beta1 <- 1
 sigma <- 2
 
-# Evaluate the mean and responses from the distributions
-mu <- beta0 + beta1*x
-y <- rnorm(n, mu, sigma)
+mu <- beta0 + beta1*x     # expected value of y
+y <- rnorm(n, mu, sigma)  # realized values
 
 
 plot(x,y)
 
+
+## Fit the model using lm()
 summary(lm1 <- lm(y~x))
 
 
 
-## Evaluate the likelihood of the model
+## Fit the model using maximum likelihood
 
-# Create a negative log-likelihood function
+# Negative log-likelihood function
 nll <- function(pars) {
     beta0 <- pars[1]
     beta1 <- pars[2]
@@ -31,14 +32,13 @@ nll <- function(pars) {
     -sum(ll)
 }
 
-# Variable inputs for nll function
+# Guess the parameter values and evalueate the likelihood
 starts <- c(beta0=0,beta1=0,sigma=1)
-
 nll(starts)
 
 
-starts2 <- c(beta0=2,beta1=0,sigma=1)
-
+## Another guess. This one is better because nll is lower
+starts2 <- c(beta0=-1,beta1=0,sigma=1)
 nll(starts2)
 
 
@@ -46,7 +46,7 @@ nll(starts2)
 
 ## Minimize negative log-likelihood
 
-# The optim function minimizes the neg log-like using the set of inital values to be optimized over.
+# The optim function minimizes the neg log-like using 'starts' as inital values
 # Hessian = TRUE returns the Hessian matrix (2nd order partial derivatives)
 fm <- optim(starts, nll, hessian=TRUE)
 fm
@@ -54,7 +54,7 @@ fm
 # $par returns the best set of parameters found for the maximum likelihood estimator (mles)
 mles <- fm$par
 
-# Obtain the variance-covariance matrix by solving the Hessian matrix
+# Obtain the variance-covariance matrix by inverting the Hessian matrix
 vcov <- solve(fm$hessian)
 
 # Standard errors taken from the square-root of the diagonals on the variance-covariance matrix
@@ -74,7 +74,7 @@ cbind(Est=mles, SE=SEs)
 
 # Create a function "lm.gibbs" that uses input data to run n iterations using
 # starting values and tuning values
-lm.gibbs <- function(y, niter=10000,
+lm.gibbs <- function(y, x, niter=10000,
                      start, tune) {
 
 # Create a matrix to store values from iterations
@@ -190,42 +190,57 @@ return(samples)
 
 
 
-
-mc1 <- lm.gibbs(y=y, niter=1000,
+## Run the Gibbs sampler
+mc1 <- lm.gibbs(y=y, x=x, niter=1000,
                 start=c(0,0,1),
                 tune=c(0.1, 0.1, 0.1))
 
 str(mc1)
 
-summary(mc1)
 
+## Posterior summary stats
+summary(mc1)
 apply(mc1, 2, sd)
 
 
-plot(mc1[,"beta0"], type="l")
-hist(mc1[,"beta0"])
+## View the results
+plot(mc1[,"beta0"], type="l")  # Traceplot
+hist(mc1[,"beta0"])            # Histogram
 
 
 
+### Use the coda package for better summary/visualization/diagnostic options
 library(coda)
 
-# Create a Markov chain Monte Carlo object for the
+## Put the results in a 'mcmc' class
 mc1.1 <- mcmc(mc1)
 
-# Extract a subset of data between start and end (exclude 1st 100 iterations)
+
+## Traceplots and posterior densities
+plot(mc1.1, ask=TRUE)
+
+
+
+## Exclude 1st 100 iterations as burn-in
 mc1.1t <- window(mc1.1, start=101, thin=1)
 
 summary(mc1.1t)
+
+plot(mc1.1t)
+
+
+
+## Compare posteriors to MLEs
+cbind(Est=mles, SE=SEs)
+
+
+
+
 
 # Evaluate rejection rate for MH ratio
 # Should be somewhere between 20 and 40 percent
 # This is where tuning comes in
 rejectionRate(mc1.1t)
-
-cbind(Est=mles, SE=SEs)
-
-# Allows for visualization of gibbs sampler
-plot(mc1.1t)
 
 
 ###################################################################################################
@@ -277,7 +292,7 @@ summary(mc1.1t)
 
 # Create a function "lm.gibbs" that uses input data to run n iterations using
 # starting values and tuning values
-lm.gibbs.faster <- function(y, niter=10000,
+lm.gibbs.faster <- function(y, x, niter=10000,
                             start, tune) {
 
   # Create a matrix to store values from iterations
@@ -384,7 +399,7 @@ lm.gibbs.faster <- function(y, niter=10000,
 
 
 
-mc.faster <- lm.gibbs.faster(y=y, niter=1000,
+mc.faster <- lm.gibbs.faster(y=y, x=x, niter=1000,
                       start=c(0,0,1),
                       tune=c(0.1, 0.1, 0.1))
 
@@ -429,7 +444,7 @@ plot(mcmc(mc.faster))
 
 # Create a function "lm.gibbs" that uses input data to run n iterations using
 # starting values and tuning values
-lm.gibbs.evenfaster <- function(y, niter=10000,
+lm.gibbs.evenfaster <- function(y, X, niter=10000,
                                 start, tune) {
 
   # Create a matrix to store values from iterations
@@ -443,7 +458,6 @@ lm.gibbs.evenfaster <- function(y, niter=10000,
 
   # Move all constant variables outside for loop
 ##  mu <- beta0 + beta1*x
-  X <- model.matrix(~x) ## First column will be 1s for the intercept
   mu <- X %*% c(beta0, beta1)
   ll.y <- sum(dnorm(y, mu, sigma, log=TRUE))
 
@@ -539,9 +553,15 @@ lm.gibbs.evenfaster <- function(y, niter=10000,
 
 
 
+## Create the design matrix
+## Here it's just a matrix 2 columns.
+## The first column is all 1s. The second is x
+X <- model.matrix(~x)
+
+X %*% c(-1,1)   ## Matrix multiplication returning expected values of y
 
 
-mc.evenfaster <- lm.gibbs.evenfaster(y=y, niter=1000,
+mc.evenfaster <- lm.gibbs.evenfaster(y=y, X=X, niter=1000,
                                      start=c(0,0,1),
                                      tune=c(0.1, 0.1, 0.1))
 
@@ -580,7 +600,7 @@ plot(mcmc(mc.evenfaster))
 
 
 ## Make things very fast with C++
-
+## Take a look at the C++ code in 'lm-gibbs.cpp'
 
 library(Rcpp)
 library(RcppArmadillo)
@@ -602,15 +622,15 @@ ls()
 
 
 
-library(benchmark)
+library(rbenchmark)
 
 
 
-## C++ version is 4-7x faster than R implementations
+## C++ version is 4-7x faster than R implementations (if you ignore compile time!)
 benchmark(
-    lm.gibbs(y=y, niter=10000,start=c(0,0,1), tune=c(0.1,0.1,0.1)),
-    lm.gibbs.faster(y=y, niter=10000,start=c(0,0,1), tune=c(0.1,0.1,0.1)),
-    lm.gibbs.evenfaster(y=y, niter=10000,start=c(0,0,1), tune=c(0.1,0.1,0.1)),
+    lm.gibbs(y=y, x=x, niter=10000,start=c(0,0,1), tune=c(0.1,0.1,0.1)),
+    lm.gibbs.faster(y=y, x=x, niter=10000,start=c(0,0,1), tune=c(0.1,0.1,0.1)),
+    lm.gibbs.evenfaster(y=y, X=X, niter=10000,start=c(0,0,1), tune=c(0.1,0.1,0.1)),
     lm_gibbsCpp(y=y, X=X, niter=10000, tune=c(0.1,0.1,0.1)),
     columns=c("test", "elapsed", "relative"), replications=10)
 
@@ -619,6 +639,6 @@ benchmark(
 
 ## All of this could be made even more efficient by using conguate
 ## priors and sampling directly from the full conditional
-## distributions
+## distributions (instead of using MH algorithm)
 
 
