@@ -1,5 +1,6 @@
-# Generalized key to evaluating the likelihood equations and joint posterior
-# probabilites for a simple linear model with 2 betas
+## Key with answers to questions in stats/exercises/lm/lm.tex
+## Problem involves fitting simple linear model with 2 betas using
+## maximum likelihood and MCMC
 
 ## Simulate data
 n <- 100
@@ -9,7 +10,7 @@ beta1 <- 1
 sigma <- 2
 
 mu <- beta0 + beta1*x     # expected value of y
-y <- rnorm(n, mu, sigma)  # realized values
+y <- rnorm(n, mu, sigma)  # realized values (the data, ie the response variable)
 
 
 plot(x,y)
@@ -65,6 +66,59 @@ SEs <- sqrt(diag(vcov))
 cbind(Est=mles, SE=SEs)
 
 
+
+
+## Take <1s to fit the model with optim, but it we want to speed things up, we
+## can write the likelihood in C++ with the help of Rcpp.
+
+
+
+
+library(Rcpp)
+library(RcppArmadillo) ## For linear algebra (not used here)
+
+## Compile the C++ code in lm-mle.cpp and create an R function to run it
+## The new function is called nllCpp
+sourceCpp("lm-mle.cpp")
+
+
+## Maximize the likelihood written in C++
+fm2 <- optim(starts2, nllCpp, hessian=TRUE, y=y, x=x)
+fm2
+
+
+
+all.equal(fm2, fm2) ## Should be TRUE
+
+
+## Compare the speed of nll and nllCpp
+library(rbenchmark)
+
+
+## C++ is only about 30% faster in this case
+## R function nll is reasonably fast because there aren't any 'for loops'
+benchmark(nll(starts), nllCpp(starts, y=y, x=x), replications=1e5)
+
+
+
+ls()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ####################################################################################
 ####################################################################################
 
@@ -83,18 +137,17 @@ lm.gibbs <- function(y, x, niter=10000,
 samples <- matrix(NA, niter, 3)
 colnames(samples) <- c("beta0", "beta1", "sigma")
 
-# Store starting values
+# Starting values
 beta0 <- start[1]
 beta1 <- start[2]
 sigma <- start[3]
 
 for(iter in 1:niter) {
-    ### Propose candidates values for each probabilites
+    ### Propose candidates values for each parameter
 
     ## Sample from p(beta0|dot)
     mu <- beta0 + beta1*x
-    ## Obtain the neg log-likelihood of the reponse variable distribution
-    ## Assume a normal distribution
+    ## Obtain the log-likelihood of the reponse variable
     ll.y <- sum(dnorm(y, mu, sigma, log=TRUE))
     # Prior probability of beta0
     prior.beta0 <- dnorm(beta0, 0, 1000, log=TRUE)
@@ -162,17 +215,17 @@ for(iter in 1:niter) {
     sigma.cand <- rlnorm(1, log(sigma), tune[3])
     mu <- beta0 + beta1*x
     ll.y <- sum(dnorm(y, mu, sigma, log=TRUE))
-    # Prior probability distribution of sigma
+    # Prior probability density for sigma
     prior.sigma <- dunif(sigma, 0, 1000, log=TRUE)
-    # Proportion distribution of sigma
+    # Proposal probability density of sigma
     prop.sigma <- dlnorm(sigma, log(sigma.cand), tune[3], log=TRUE)
 
+    # Likelihood, prior, and proposal for candidate
     ll.y.cand <- sum(dnorm(y, mu, sigma.cand, log=TRUE))
-    # Prior probability distribution of candidate sigma
     prior.sigma.cand <- dunif(sigma.cand, 0, 1000, log=TRUE)
-    # Proportion distribution of candidate
     prop.sigma.cand <- dlnorm(sigma.cand, log(sigma), tune[3], log=TRUE)
 
+    # Metropolis-Hastings ratio
     # P(data | candidate sigma) * P(candidate sigma) * P(sigma | candidate sigma) / P(data | sigma) * P(sigma) * P(candidate sigma | sigma)
     mhr <- exp((ll.y.cand+prior.sigma.cand+prop.sigma) -
                (ll.y+prior.sigma+prop.sigma.cand))
@@ -196,7 +249,7 @@ return(samples)
 ## Run the Gibbs sampler
 mc1 <- lm.gibbs(y=y, x=x, niter=1000,
                 start=c(0,0,1),
-                tune=c(0.1, 0.1, 0.1))
+                tune=c(0.4, 0.4, 0.2))
 
 str(mc1)
 
@@ -240,9 +293,10 @@ cbind(Est=mles, SE=SEs)
 
 
 
-# Evaluate rejection rate for MH ratio
-# Should be somewhere between 20 and 40 percent
-# This is where tuning comes in
+## Rejection rate for MH algorithm
+## Should be somewhere between 60 and 70 percent
+## This is where tuning comes in.
+## Increase tuning parameters if rejection rate is too low
 rejectionRate(mc1.1t)
 
 
@@ -270,7 +324,7 @@ ji()
 
 
 ## Compile the model and adapt
-# requires creation of jag file in text editor
+## requires creation of jag file in text editor
 jm <- jags.model("lm-JAGS.jag", data=jd, inits=ji, n.chains=3,
                  n.adapt=1000)
 
@@ -307,37 +361,20 @@ lm.gibbs.faster <- function(y, x, niter=10000,
   ll.y <- sum(dnorm(y, mu, sigma, log=TRUE))
 
   for(iter in 1:niter) {
-    ### Propose candidates values for each probabilites
 
     ## Sample from p(beta0|dot)
-
-    # Prior probability of beta0
     prior.beta0 <- dnorm(beta0, 0, 1000, log=TRUE)
 
-    # Propose a candidate value for each beta0 based around the known value of beta0
-    # Tuning value allows for exploration of values around beta0 by oscillating values above and below beta0
-    # Tuning is a trial and error process and comes into play when assessing rejection rates
     beta0.cand <- rnorm(1, beta0, tune[1])
-    # Update mu for the candidate beta0
     mu.cand <- beta0.cand + beta1*x
-    # Re-evaluate the summation of log-like of the reponse distribution use the candidate mu
     ll.y.cand <- sum(dnorm(y, mu.cand, sigma, log=TRUE))
-    # Obtain a new prior probabilty for the candidate beta0
     prior.beta0.cand <- dnorm(beta0.cand, 0, 1000, log=TRUE)
 
-    # Metropolis-Hastings Ratio is a Markov chain Monte Carlo (MCMC) method used to
-    # obtain a sequence of random sample from a probabilty distribution
-
-    # P(data | candidate beta0) * P(candidate beta0) / P(data | beta0) * P(beta0)
     mhr <- exp((ll.y.cand+prior.beta0.cand) - (ll.y+prior.beta0))
-
-    # If the MH ratio is greater than random deviates of uniform distribution than
-    # update beta0 with the new candidate beta0
-    # update likelihood with new candidate likelihood
     if(runif(1) < mhr) {
       beta0 <- beta0.cand
-      ll.y <- ll.y.cand
-      mu <- mu.cand
+      ll.y <- ll.y.cand   # Stored to avoid redundant calculation
+      mu <- mu.cand       # Stored to avoid redundant calculation
     }
 
     ## Sample from p(beta1|dot)
@@ -351,35 +388,25 @@ lm.gibbs.faster <- function(y, x, niter=10000,
     mhr <- exp((ll.y.cand+prior.beta1.cand) - (ll.y+prior.beta1))
     if(runif(1) < mhr) {
       beta1 <- beta1.cand
-      ll.y <- ll.y.cand
-      mu <- mu.cand
+      ll.y <- ll.y.cand   # Stored to avoid redundant calculation
+      mu <- mu.cand       # Stored to avoid redundant calculation
     }
 
     ## Sample from p(sigma|dot)
-
-    ## Asymmetric proposal distribution - most commonly due to bounds on parameter values
-    # Example: sigma cannot be negative
-    # Use the log normal distribution to ensure positive sigma values
     sigma.cand <- rlnorm(1, log(sigma), tune[3])
 #    ll.y <- sum(dnorm(y, mu, sigma, log=TRUE))
-    # Prior probability distribution of sigma
     prior.sigma <- dunif(sigma, 0, 1000, log=TRUE)
-    # Proportion distribution of sigma
     prop.sigma <- dlnorm(sigma, log(sigma.cand), tune[3], log=TRUE)
 
     ll.y.cand <- sum(dnorm(y, mu, sigma.cand, log=TRUE))
-    # Prior probability distribution of candidate sigma
     prior.sigma.cand <- dunif(sigma.cand, 0, 1000, log=TRUE)
-    # Proportion distribution of candidate
     prop.sigma.cand <- dlnorm(sigma.cand, log(sigma), tune[3], log=TRUE)
 
-    # P(data | candidate sigma) * P(candidate sigma) * P(sigma | candidate sigma) / P(data | sigma) * P(sigma) * P(candidate sigma | sigma)
     mhr <- exp((ll.y.cand+prior.sigma.cand+prop.sigma) -
                  (ll.y+prior.sigma+prop.sigma.cand))
-
     if(runif(1) < mhr) {
       sigma <- sigma.cand
-      ll.y <- ll.y.cand
+      ll.y <- ll.y.cand   # Stored to avoid redundant calculation
     }
 
     samples[iter,] <- c(beta0, beta1, sigma)
@@ -448,30 +475,23 @@ lm.gibbs.evenfaster <- function(y, X, niter=10000,
   beta1 <- start[2]
   sigma <- start[3]
 
-  # Move all constant variables outside for loop
 ##  mu <- beta0 + beta1*x
-  mu <- X %*% c(beta0, beta1)
+  mu <- X %*% c(beta0, beta1)                 # matrix multiplication
   ll.y <- sum(dnorm(y, mu, sigma, log=TRUE))
 
   for(iter in 1:niter) {
-    ### Propose candidates values for each probabilites
 
     ## Sample from p(beta0|dot)
 
-    # Prior probability of beta0
     prior.beta0 <- dnorm(beta0, 0, 1000, log=TRUE)
-
     beta0.cand <- rnorm(1, beta0, tune[1])
-    # Update mu for the candidate beta0
 ##    mu.cand <- beta0.cand + beta1*x
     mu.cand <- X %*% c(beta0.cand, beta1)
 
     ll.y.cand <- sum(dnorm(y, mu.cand, sigma, log=TRUE))
     prior.beta0.cand <- dnorm(beta0.cand, 0, 1000, log=TRUE)
 
-    # P(data | candidate beta0) * P(candidate beta0) / P(data | beta0) * P(beta0)
     mhr <- exp((ll.y.cand+prior.beta0.cand) - (ll.y+prior.beta0))
-
     if(runif(1) < mhr) {
       beta0 <- beta0.cand
       ll.y <- ll.y.cand
@@ -495,27 +515,16 @@ lm.gibbs.evenfaster <- function(y, X, niter=10000,
     }
 
     ## Sample from p(sigma|dot)
-
-    ## Asymmetric proposal distribution - most commonly due to bounds on parameter values
-    # Example: sigma cannot be negative
-    # Use the log normal distribution to ensure positive sigma values
     sigma.cand <- rlnorm(1, log(sigma), tune[3])
-#    ll.y <- sum(dnorm(y, mu, sigma, log=TRUE))
-    # Prior probability distribution of sigma
     prior.sigma <- dunif(sigma, 0, 1000, log=TRUE)
-    # Proportion distribution of sigma
     prop.sigma <- dlnorm(sigma, log(sigma.cand), tune[3], log=TRUE)
 
     ll.y.cand <- sum(dnorm(y, mu, sigma.cand, log=TRUE))
-    # Prior probability distribution of candidate sigma
     prior.sigma.cand <- dunif(sigma.cand, 0, 1000, log=TRUE)
-    # Proportion distribution of candidate
     prop.sigma.cand <- dlnorm(sigma.cand, log(sigma), tune[3], log=TRUE)
 
-    # P(data | candidate sigma) * P(candidate sigma) * P(sigma | candidate sigma) / P(data | sigma) * P(sigma) * P(candidate sigma | sigma)
     mhr <- exp((ll.y.cand+prior.sigma.cand+prop.sigma) -
                  (ll.y+prior.sigma+prop.sigma.cand))
-
     if(runif(1) < mhr) {
       sigma <- sigma.cand
       ll.y <- ll.y.cand
@@ -572,7 +581,7 @@ sourceCpp(file="lm-gibbs.cpp")
 
 X <- model.matrix(~x)
 
-mc.fastest <- lm_gibbsCpp(y=y, X=X, niter=1000, tune=c(0.1,0.1,0.1))
+mc.fastest <- lm_gibbsCpp(y=y, X=X, niter=1000, tune=c(0.6,0.6,0.3))
 
 
 plot(mcmc(mc.fastest))
@@ -643,7 +652,7 @@ clusterSetRNGStream(cl, 3479)
 out <- clusterEvalQ(cl, {
 ##    mc <- lm_gibbsCpp(y=y, X=X, niter=10000, tune=c(0.1,0.1,0.1))
     mc <- lm.gibbs(y=y, x=x, niter=1000,
-                   start=c(0,0,1), tune=c(0.1,0.1,0.1))
+                   start=c(0,0,1), tune=c(0.7,0.7,0.3))
     library(coda)
     return(mcmc(mc))
 })
@@ -662,11 +671,11 @@ plot(mcl)
 
 
 ## Using C++ version
-## Compile time makes this option slow. There must be a better way.
+## Compile time makes this option slow. There must be a better way!
 out <- clusterEvalQ(cl, {
     library(Rcpp)
     sourceCpp("lm-gibbs.cpp")
-    mc <- lm_gibbsCpp(y=y, X=X, niter=10000, tune=c(0.1,0.1,0.1))
+    mc <- lm_gibbsCpp(y=y, X=X, niter=10000, tune=c(0.6,0.6,0.3))
     library(coda)
     return(mcmc(mc))
 })
