@@ -685,6 +685,7 @@ library(coda)
 mcl <- as.mcmc.list(out)
 
 
+plot(mcl)
 
 
 
