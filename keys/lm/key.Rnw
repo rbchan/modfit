@@ -1,0 +1,176 @@
+\documentclass[12pt]{article}
+
+\usepackage{parskip}
+\usepackage[hmargin=1in,vmargin=1in]{geometry}
+\usepackage[pdftex,hidelinks]{hyperref}
+
+
+
+\begin{document}
+
+
+\title{Key to Exercise I: Fitting a linear model using maximum
+  likelihood and Gibbs sampling \\ \vspace{1cm}
+  The exercise can be found in: {\tt stats/exercises/lm.txt}}
+\author{Richard Chandler \\ Warnell School of Forestry and Natural
+  Resources \\ University of Georgia \\ \href{mailto:rchandler@warnell.uga.edu}{rchandler@warnell.uga.edu}
+}
+\date{\today}
+
+\maketitle
+
+
+
+
+
+\section{Simulate a dataset}
+
+
+Here's code to simulate $x$ and $y$:
+
+<<>>=
+n <- 100
+x <- rnorm(n) # Covariate
+beta0 <- -1
+beta1 <- 1
+sigma <- 2
+
+mu <- beta0 + beta1*x     # expected value of y
+y <- rnorm(n, mu, sigma)  # realized values (the data, ie the response variable)
+@
+
+From now on, let's pretend like this is data that we collected.
+<<>>=
+mydata <- data.frame(y, x)
+mydata[1:4,]
+@
+
+%\newpage
+
+Take a look:
+<<>>=
+plot(x,y)
+@
+
+%Imagine $x$ is (standardized) length and $y$ is mass, which we've
+%recorded on 100 Canada warblers ({\it Cardellina canadensis}).
+
+
+
+
+
+\section{Likelihood}
+
+The likelihood is the product of the $n$ Gaussian densities:
+\[
+  L(\beta_0,\beta_1,\sigma^2; {\bf y}) = \prod_{i=1}^n p(y_i|\beta_0,\beta_1,\sigma^2)
+\]
+where $p(y_i|\beta_0,\beta_1,\sigma^2) = \mathrm{Norm}(y_i|\mu_i,\sigma^2)$ and $\mu_i = \beta_0 + \beta_1x_i$.
+
+
+Here is an R function to compute the negative log-likelihood:
+<<>>=
+nll <- function(pars) {
+    beta0 <- pars[1]
+    beta1 <- pars[2]
+    sigma <- pars[3]
+    mu <- beta0 + beta1*x
+    ll <- dnorm(y, mean=mu, sd=sigma, log=TRUE)
+    -sum(ll)
+}
+@
+
+
+
+
+\section{Minimize the negative log-likelihood}
+
+Now that we have data and a likelihood function, we need to find the
+parameter values that maximize the log-likelihood, or equivalently,
+minimize the negative log-likelihood. Before we do that, note that we
+could try the brute force approach of guessing parameter values,
+evaluating the likelihood, and then repeating until we can't lower the
+negative log-likelihood anymore. For example:
+
+<<>>=
+# Guess the parameter values and evalueate the likelihood
+starts <- c(beta0=0,beta1=0,sigma=1)
+nll(starts)
+
+## Another guess. This one is better because nll is lower
+starts2 <- c(beta0=-1,beta1=0,sigma=1)
+nll(starts2)
+@
+
+This is obviously a bad idea. Even with only three parameters, it
+would take forever to find the true maximum likelihood estimates
+(MLEs). Fortunately, there are many optimization functions in
+\verb+R+. We'll use \verb+optim+, but \verb+nlm+ or \verb+nlminb+
+would work just as well.
+
+The \verb+optim+ function requires starting values and a likelihood
+function. If the likelihood function needs arguments other than the
+parameter vector, you can pass these to optim through the \verb+...+
+argument. If you want standard errors, you need to compute the hessian
+matrix.
+<<>>=
+fm <- optim(starts, nll, hessian=TRUE)
+fm
+@
+The \verb+par+ component has the MLEs. The \verb+value+ component is
+the negative log-likelihood at the MLEs. The \verb+convergence+ value
+should be 0. To obtain the SEs, we need to first invert the Hessian to
+get the variance-covariance matrix:
+
+<<>>=
+vcov <- solve(fm$hessian)
+SEs <- sqrt(diag(vcov))
+@
+
+Now, let's compare our results:
+
+<<>>=
+mles <- fm$par # The maximum likelihood estimates
+cbind(Est=mles, SE=SEs)
+@
+
+to results from \verb+lm+:
+<<>>=
+summary(lm(y~x))
+@
+
+The results are very similar. The small differences are likely due to
+the use of maximum likelihood instead of ordinary least-squares, which
+is used by \verb+lm+.
+
+
+\section{Joint posterior distribution}
+
+The joint posterior distribution is proportional to the product of the
+likelihood and the joint prior distribution. The priors are usually
+taken to be independent, so we have:
+\[
+  p(\beta_0,\beta_1,\sigma^2 | {\bf y}) \propto \left\{\prod_{i=1}^n p(y_i|\beta_0,\beta_1,\sigma^2)\right\}p(\beta_0)p(\beta_1)p(\sigma^2)
+\]
+where, as before, $p(y_i|\beta_0,\beta_1,\sigma^2) = \mathrm{Norm}(y_i|\mu_i,\sigma^2)$. %All other probability distributions are priors.
+Here are three possibilities for the priors: $p(\beta_0) = \mathrm{Norm}(0,1000000)$, $p(\beta_1) = \mathrm{Norm}(0,1000000)$, $p(\sigma) = \mathrm{Unif}(0,1000)$.
+
+We can't easily compute the joint posterior distribution
+analytically, so we'll use Gibbs sampling. Gibbs sampling requires
+sampling each parameter from it's full conditional distribution. The
+full conditional distributions for our linear model are as follows.
+\[
+  p(\beta_0|\beta_1,\sigma^2,{\bf y}) \propto \left\{\prod_{i=1}^n p(y_i|\beta_0,\beta_1,\sigma^2)\right\}p(\beta_0)
+\]
+which can be sampled from using the M-H algorighm. For example, propose $\beta_0^{*} \sim \mathrm{Norm}(\beta_0, tune_1)$ and accept if ...
+
+\[
+  p(\beta_1|\beta_0,\sigma^2,{\bf y}) \propto \left\{\prod_{i=1}^n p(y_i|\beta_0,\beta_1,\sigma^2)\right\}p(\beta_1)
+\]
+
+\[
+  p(\sigma^2|\beta_0,\sigma^2,{\bf y}) \propto \left\{\prod_{i=1}^n p(y_i|\beta_0,\beta_1,\sigma^2)\right\}p(\sigma^2)
+\]
+
+
+\end{document}
