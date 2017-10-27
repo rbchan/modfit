@@ -10,7 +10,7 @@ system("open lm-key.pdf")
 ## It seems we can't easily convert our .Rnw or .tex to .html
 ## but here's a try with pandoc
 ## Convert .tex file to .html and .md
-system("pandoc -s lm-key.tex --mathjax -o lm-key.html")
+## system("pandoc -s lm-key.tex --mathjax -o lm-key.html")
 
 
 ## A tedious workaround is to create a .Rmd and then manually insert
@@ -37,8 +37,8 @@ render("lm-key.Rmd", "html_document")
 
 ## Convert the .R file to .html
 knit("lm-key.Rnw", tangle=TRUE)
-##render("lm-key.R", "all")
-render("lm-key.R", "md_document")
+## render("lm-key.R", "all")
+## render("lm-key.R", "md_document")
 
 ##render("lm-key.Rnw", "html_document")
 

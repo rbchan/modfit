@@ -9,7 +9,7 @@ University of Georgia
 Simulate a dataset
 ==================
 
-Hereâ€™s some <span>R</span> code to simulate *x* and *y*:
+Here's some <span>R</span> code to simulate *x* and *y*:
 
 ``` r
 set.seed(348720) # To make this reproducible
@@ -65,7 +65,7 @@ nll <- function(pars) {
 Minimize the negative log-likelihood
 ====================================
 
-Now that we have data and a likelihood function, we need to find the parameter values that maximize the log-likelihood, or equivalently, minimize the negative log-likelihood. Before we do that, note that we could try the brute force approach of guessing parameter values, evaluating the likelihood, and then repeating until we canâ€™t lower the negative log-likelihood anymore. For example:
+Now that we have data and a likelihood function, we need to find the parameter values that maximize the log-likelihood, or equivalently, minimize the negative log-likelihood. Before we do that, note that we could try the brute force approach of guessing parameter values, evaluating the likelihood, and then repeating until we can't lower the negative log-likelihood anymore. For example:
 
 ``` r
 # Guess the parameter values and evalueate the likelihood
@@ -83,7 +83,7 @@ nll(starts2)
 
     ## [1] 352.6342
 
-This is obviously a bad idea. Even with only three parameters, it would take forever to find the true maximum likelihood estimates (MLEs). Fortunately, there are many optimization functions in `R`. Weâ€™ll use `optim`, but `nlm` or `nlminb` would work just as well.
+This is obviously a bad idea. Even with only three parameters, it would take forever to find the true maximum likelihood estimates (MLEs). Fortunately, there are many optimization functions in `R`. We'll use `optim`, but `nlm` or `nlminb` would work just as well.
 
 The `optim` function requires starting values and a likelihood function. If the likelihood function needs arguments other than the parameter vector, you can pass these to optim through the `...` argument. If you want standard errors, you need to compute the hessian matrix.
 
@@ -166,9 +166,9 @@ Joint posterior distribution and Gibbs sampling
 
 The joint posterior distribution is proportional to the product of the likelihood and the joint prior distribution. The priors are usually taken to be independent, so in this case we have: *p*(*β*<sub>0</sub>, *β*<sub>1</sub>, *σ*<sup>2</sup>)=*p*(*β*<sub>0</sub>)*p*(*β*1)*p*(*σ*<sup>2</sup>), which means that we can write the posterior like this:
 $$p(\\beta\_0,\\beta\_1,\\sigma^2 | {\\bf y}) \\propto \\left\\{\\prod\_{i=1}^n p(y\_i|\\beta\_0,\\beta\_1,\\sigma^2)\\right\\}p(\\beta\_0)p(\\beta\_1)p(\\sigma^2)$$
- where, as before, *p*(*y*<sub>*i*</sub>|*β*<sub>0</sub>, *β*<sub>1</sub>, *σ*<sup>2</sup>)=*N**o**r**m*(*y*<sub>*i*</sub>|*μ*<sub>*i*</sub>, *σ*<sup>2</sup>). Here are three possibilities for the priors: *p*(*β*<sub>0</sub>)=*N**o**r**m*(0, 1000000), *p*(*β*<sub>1</sub>)=*N**o**r**m*(0, 1000000), *p*(*σ*)=*U**n**i**f*(0, 1000). Itâ€™s easy to show that the influence of the prior is negligible for moderate to large sample sizes.
+ where, as before, *p*(*y*<sub>*i*</sub>|*β*<sub>0</sub>, *β*<sub>1</sub>, *σ*<sup>2</sup>)=*N**o**r**m*(*y*<sub>*i*</sub>|*μ*<sub>*i*</sub>, *σ*<sup>2</sup>). Here are three possibilities for the priors: *p*(*β*<sub>0</sub>)=*N**o**r**m*(0, 1000000), *p*(*β*<sub>1</sub>)=*N**o**r**m*(0, 1000000), *p*(*σ*)=*U**n**i**f*(0, 1000). It's easy to show that the influence of the prior is negligible for moderate to large sample sizes.
 
-We canâ€™t easily compute the joint posterior distribution analytically because it would require computing the normalizing constant in the previous equation. To do that, we would have to do a three-dimensional integration over the parameters. Fortunately, we can use MCMC to overcome the problem posed by intractable normalizing constants. Gibbs sampling is a type of MCMC algorithm that requires sampling each parameter from its full conditional distribution. The full conditional distribution for *β*<sub>0</sub> is:
+We can't easily compute the joint posterior distribution analytically because it would require computing the normalizing constant in the previous equation. To do that, we would have to do a three-dimensional integration over the parameters. Fortunately, we can use MCMC to overcome the problem posed by intractable normalizing constants. Gibbs sampling is a type of MCMC algorithm that requires sampling each parameter from its full conditional distribution. The full conditional distribution for *β*<sub>0</sub> is:
 $$p(\\beta\_0|\\beta\_1,\\sigma^2,{\\bf y}) \\propto \\left\\{\\prod\_{i=1}^n p(y\_i|\\beta\_0,\\beta\_1,\\sigma^2)\\right\\}p(\\beta\_0)$$
  This is the probability distribution for *β*<sub>0</sub>, conditional on all the other parameters in the model and the data. We can sample from this distribution using the Metropolis-Hastings (MH) algorighm. For example, we can propose *β*<sub>0</sub><sup>\*</sup> ∼ *N**o**r**m*(*β*<sub>0</sub>, *t**u**n**e*<sub>1</sub>) and accept this candidate value with probability min(1, *R*) where *R* is the MH acceptance ratio:
 $$R = \\frac{\\left\\{\\prod\_{i=1}^n p(y\_i|\\beta\_0^{\*},\\beta\_1,\\sigma^2)\\right\\}p(\\beta\_0^{\*})p(\\beta\_0|\\beta\_0^{\*})}{\\left\\{\\prod\_{i=1}^n p(y\_i|\\beta\_0,\\beta\_1,\\sigma^2)\\right\\}p(\\beta\_0)p(\\beta\_0^{\*}|\\beta\_0)}$$
@@ -179,7 +179,7 @@ $$p(\\beta\_1|\\beta\_0,\\sigma^2,{\\bf y}) \\propto \\left\\{\\prod\_{i=1}^n p(
 
 $$p(\\sigma^2|\\beta\_0,\\sigma^2,{\\bf y}) \\propto \\left\\{\\prod\_{i=1}^n p(y\_i|\\beta\_0,\\beta\_1,\\sigma^2)\\right\\}p(\\sigma^2)$$
 
-A few things to note about the Metropolis-Hastings algorithm. First, if the proposal distribution is symmetric, you can ignore it when computing *R*. Second, if you use conjugate priors, you can often sample directly from the full conditional distributions rather than use the MH algorithm. Hereâ€™s a link to a handy cheat-sheat for conjugate priors: <https://en.wikipedia.org/wiki/Conjugate_prior#Table_of_conjugate_distributions>. The last thing to mention about the HM algorithm is that you want to accept about 30-40% of the proposals, and you therefore have to â€˜tuneâ€™ the algorithm to make it efficient. This means fiddling with the parameter *t**u**n**e*<sub>1</sub> shown above. Itâ€™s usually pretty easy to find good tuning values, but you can also use an adaptive phase to do this automatically.
+A few things to note about the Metropolis-Hastings algorithm. First, if the proposal distribution is symmetric, you can ignore it when computing *R*. Second, if you use conjugate priors, you can often sample directly from the full conditional distributions rather than use the MH algorithm. Here's a link to a handy cheat-sheat for conjugate priors: <https://en.wikipedia.org/wiki/Conjugate_prior#Table_of_conjugate_distributions>. The last thing to mention about the HM algorithm is that you want to accept about 30-40% of the proposals, and you therefore have to â€˜tune' the algorithm to make it efficient. This means fiddling with the parameter *t**u**n**e*<sub>1</sub> shown above. It's usually pretty easy to find good tuning values, but you can also use an adaptive phase to do this automatically.
 
 A Gibbs sampler in <span>R</span>
 =================================
@@ -241,7 +241,7 @@ return(samples)
 
 The function `lm.gibbs` is fairly long and dense. Take a look at the script `stats/keys/lm-key-old.R` to see an annotated function along with several other functions for making the algorithm much faster. These examples include the use of <span>Rcpp</span> and <span>RcppArmadillo</span>.
 
-Hereâ€™s how to run the function:
+Here's how to run the function:
 
 ``` r
 out1 <- lm.gibbs(y=y, x=x, niter=1000,
@@ -278,7 +278,7 @@ summary(mc1)
     ## beta1  0.303  0.6608  0.8444  0.9826  1.2564
     ## sigma  1.831  2.0815  2.1724  2.2778  2.4836
 
-There are many things to take note of. The `Mean` is the posterior mean. The `SD` is the posterior standard deviation, which will be similar to the SE you would get from a classical analysis. The `Naive SE` and `Time-series SE` tell you about the Monte Carlo error associated with the posterior means. In Bayesian inference, point estimates arenâ€™t the main object of inference. Instead, you want the entire posterior distribution, and the quantiles are helpful for summarizing the distributions. You can also view the posteriors (along with the trace plots) using the `plot` method in the `coda` package.
+There are many things to take note of. The `Mean` is the posterior mean. The `SD` is the posterior standard deviation, which will be similar to the SE you would get from a classical analysis. The `Naive SE` and `Time-series SE` tell you about the Monte Carlo error associated with the posterior means. In Bayesian inference, point estimates aren't the main object of inference. Instead, you want the entire posterior distribution, and the quantiles are helpful for summarizing the distributions. You can also view the posteriors (along with the trace plots) using the `plot` method in the `coda` package.
 
 ``` r
 plot(mc1)
@@ -336,7 +336,7 @@ Using <span>JAGS</span>
 
 The first thing to do is create a text file with the model description. Mine is called `lm-JAGS.jag`, and it looks like this:
 
-Now, we need to put the data in a named list.
+Now we need to put the data in a named list, choose the parameters we want to monitor, and create a function to generate random initial values.
 
 ``` r
 jd <- list(y=y, x=x, n=n)
@@ -366,233 +366,16 @@ ji()
     ## $sigmaSq
     ## [1] 0.07151817
 
+Here's how to compile the model with 3 chains, adapt, and then draw 5000 posterior samples for each chain.
+
 ``` r
 library(rjags)
 jm <- jags.model("lm-JAGS.jag", data=jd, inits=ji, n.chains=3,
                  n.adapt=1000)
-```
-
-    ## Compiling model graph
-    ##    Resolving undeclared variables
-    ##    Allocating nodes
-    ## Graph information:
-    ##    Observed stochastic nodes: 100
-    ##    Unobserved stochastic nodes: 3
-    ##    Total graph size: 412
-    ## 
-    ## Initializing model
-    ## 
-    ## 
-      |                                                        
-      |                                                  |   0%
-      |                                                        
-      |+                                                 |   2%
-      |                                                        
-      |++                                                |   4%
-      |                                                        
-      |+++                                               |   6%
-      |                                                        
-      |++++                                              |   8%
-      |                                                        
-      |+++++                                             |  10%
-      |                                                        
-      |++++++                                            |  12%
-      |                                                        
-      |+++++++                                           |  14%
-      |                                                        
-      |++++++++                                          |  16%
-      |                                                        
-      |+++++++++                                         |  18%
-      |                                                        
-      |++++++++++                                        |  20%
-      |                                                        
-      |+++++++++++                                       |  22%
-      |                                                        
-      |++++++++++++                                      |  24%
-      |                                                        
-      |+++++++++++++                                     |  26%
-      |                                                        
-      |++++++++++++++                                    |  28%
-      |                                                        
-      |+++++++++++++++                                   |  30%
-      |                                                        
-      |++++++++++++++++                                  |  32%
-      |                                                        
-      |+++++++++++++++++                                 |  34%
-      |                                                        
-      |++++++++++++++++++                                |  36%
-      |                                                        
-      |+++++++++++++++++++                               |  38%
-      |                                                        
-      |++++++++++++++++++++                              |  40%
-      |                                                        
-      |+++++++++++++++++++++                             |  42%
-      |                                                        
-      |++++++++++++++++++++++                            |  44%
-      |                                                        
-      |+++++++++++++++++++++++                           |  46%
-      |                                                        
-      |++++++++++++++++++++++++                          |  48%
-      |                                                        
-      |+++++++++++++++++++++++++                         |  50%
-      |                                                        
-      |++++++++++++++++++++++++++                        |  52%
-      |                                                        
-      |+++++++++++++++++++++++++++                       |  54%
-      |                                                        
-      |++++++++++++++++++++++++++++                      |  56%
-      |                                                        
-      |+++++++++++++++++++++++++++++                     |  58%
-      |                                                        
-      |++++++++++++++++++++++++++++++                    |  60%
-      |                                                        
-      |+++++++++++++++++++++++++++++++                   |  62%
-      |                                                        
-      |++++++++++++++++++++++++++++++++                  |  64%
-      |                                                        
-      |+++++++++++++++++++++++++++++++++                 |  66%
-      |                                                        
-      |++++++++++++++++++++++++++++++++++                |  68%
-      |                                                        
-      |+++++++++++++++++++++++++++++++++++               |  70%
-      |                                                        
-      |++++++++++++++++++++++++++++++++++++              |  72%
-      |                                                        
-      |+++++++++++++++++++++++++++++++++++++             |  74%
-      |                                                        
-      |++++++++++++++++++++++++++++++++++++++            |  76%
-      |                                                        
-      |+++++++++++++++++++++++++++++++++++++++           |  78%
-      |                                                        
-      |++++++++++++++++++++++++++++++++++++++++          |  80%
-      |                                                        
-      |+++++++++++++++++++++++++++++++++++++++++         |  82%
-      |                                                        
-      |++++++++++++++++++++++++++++++++++++++++++        |  84%
-      |                                                        
-      |+++++++++++++++++++++++++++++++++++++++++++       |  86%
-      |                                                        
-      |++++++++++++++++++++++++++++++++++++++++++++      |  88%
-      |                                                        
-      |+++++++++++++++++++++++++++++++++++++++++++++     |  90%
-      |                                                        
-      |++++++++++++++++++++++++++++++++++++++++++++++    |  92%
-      |                                                        
-      |+++++++++++++++++++++++++++++++++++++++++++++++   |  94%
-      |                                                        
-      |++++++++++++++++++++++++++++++++++++++++++++++++  |  96%
-      |                                                        
-      |+++++++++++++++++++++++++++++++++++++++++++++++++ |  98%
-      |                                                        
-      |++++++++++++++++++++++++++++++++++++++++++++++++++| 100%
-
-``` r
 jc <- coda.samples(jm, jp, n.iter=5000)
 ```
 
-    ## 
-      |                                                        
-      |                                                  |   0%
-      |                                                        
-      |*                                                 |   2%
-      |                                                        
-      |**                                                |   4%
-      |                                                        
-      |***                                               |   6%
-      |                                                        
-      |****                                              |   8%
-      |                                                        
-      |*****                                             |  10%
-      |                                                        
-      |******                                            |  12%
-      |                                                        
-      |*******                                           |  14%
-      |                                                        
-      |********                                          |  16%
-      |                                                        
-      |*********                                         |  18%
-      |                                                        
-      |**********                                        |  20%
-      |                                                        
-      |***********                                       |  22%
-      |                                                        
-      |************                                      |  24%
-      |                                                        
-      |*************                                     |  26%
-      |                                                        
-      |**************                                    |  28%
-      |                                                        
-      |***************                                   |  30%
-      |                                                        
-      |****************                                  |  32%
-      |                                                        
-      |*****************                                 |  34%
-      |                                                        
-      |******************                                |  36%
-      |                                                        
-      |*******************                               |  38%
-      |                                                        
-      |********************                              |  40%
-      |                                                        
-      |*********************                             |  42%
-      |                                                        
-      |**********************                            |  44%
-      |                                                        
-      |***********************                           |  46%
-      |                                                        
-      |************************                          |  48%
-      |                                                        
-      |*************************                         |  50%
-      |                                                        
-      |**************************                        |  52%
-      |                                                        
-      |***************************                       |  54%
-      |                                                        
-      |****************************                      |  56%
-      |                                                        
-      |*****************************                     |  58%
-      |                                                        
-      |******************************                    |  60%
-      |                                                        
-      |*******************************                   |  62%
-      |                                                        
-      |********************************                  |  64%
-      |                                                        
-      |*********************************                 |  66%
-      |                                                        
-      |**********************************                |  68%
-      |                                                        
-      |***********************************               |  70%
-      |                                                        
-      |************************************              |  72%
-      |                                                        
-      |*************************************             |  74%
-      |                                                        
-      |**************************************            |  76%
-      |                                                        
-      |***************************************           |  78%
-      |                                                        
-      |****************************************          |  80%
-      |                                                        
-      |*****************************************         |  82%
-      |                                                        
-      |******************************************        |  84%
-      |                                                        
-      |*******************************************       |  86%
-      |                                                        
-      |********************************************      |  88%
-      |                                                        
-      |*********************************************     |  90%
-      |                                                        
-      |**********************************************    |  92%
-      |                                                        
-      |***********************************************   |  94%
-      |                                                        
-      |************************************************  |  96%
-      |                                                        
-      |************************************************* |  98%
-      |                                                        
-      |**************************************************| 100%
+Take a look:
 
 ``` r
 summary(jc)
@@ -608,140 +391,22 @@ summary(jc)
     ##    plus standard error of the mean:
     ## 
     ##          Mean     SD Naive SE Time-series SE
-    ## beta0 -0.8775 0.2199 0.001795       0.001835
-    ## beta1  0.8218 0.2088 0.001705       0.002119
-    ## sigma  2.1834 0.1604 0.001310       0.001772
+    ## beta0 -0.8778 0.2204 0.001799       0.001799
+    ## beta1  0.8215 0.2109 0.001722       0.002261
+    ## sigma  2.1841 0.1599 0.001305       0.001739
     ## 
     ## 2. Quantiles for each variable:
     ## 
     ##          2.5%     25%     50%     75%   97.5%
-    ## beta0 -1.3145 -1.0248 -0.8754 -0.7301 -0.4448
-    ## beta1  0.4215  0.6792  0.8207  0.9623  1.2330
-    ## sigma  1.8994  2.0701  2.1731  2.2859  2.5228
+    ## beta0 -1.3101 -1.0244 -0.8764 -0.7313 -0.4404
+    ## beta1  0.4061  0.6823  0.8219  0.9611  1.2379
+    ## sigma  1.8996  2.0705  2.1760  2.2864  2.5220
+
+Continue sampling where we left off.
 
 ``` r
 jc2 <- coda.samples(jm, jp, n.iter=1000)
 ```
-
-    ## 
-      |                                                        
-      |                                                  |   0%
-      |                                                        
-      |*                                                 |   2%
-      |                                                        
-      |**                                                |   4%
-      |                                                        
-      |***                                               |   6%
-      |                                                        
-      |****                                              |   8%
-      |                                                        
-      |*****                                             |  10%
-      |                                                        
-      |******                                            |  12%
-      |                                                        
-      |*******                                           |  14%
-      |                                                        
-      |********                                          |  16%
-      |                                                        
-      |*********                                         |  18%
-      |                                                        
-      |**********                                        |  20%
-      |                                                        
-      |***********                                       |  22%
-      |                                                        
-      |************                                      |  24%
-      |                                                        
-      |*************                                     |  26%
-      |                                                        
-      |**************                                    |  28%
-      |                                                        
-      |***************                                   |  30%
-      |                                                        
-      |****************                                  |  32%
-      |                                                        
-      |*****************                                 |  34%
-      |                                                        
-      |******************                                |  36%
-      |                                                        
-      |*******************                               |  38%
-      |                                                        
-      |********************                              |  40%
-      |                                                        
-      |*********************                             |  42%
-      |                                                        
-      |**********************                            |  44%
-      |                                                        
-      |***********************                           |  46%
-      |                                                        
-      |************************                          |  48%
-      |                                                        
-      |*************************                         |  50%
-      |                                                        
-      |**************************                        |  52%
-      |                                                        
-      |***************************                       |  54%
-      |                                                        
-      |****************************                      |  56%
-      |                                                        
-      |*****************************                     |  58%
-      |                                                        
-      |******************************                    |  60%
-      |                                                        
-      |*******************************                   |  62%
-      |                                                        
-      |********************************                  |  64%
-      |                                                        
-      |*********************************                 |  66%
-      |                                                        
-      |**********************************                |  68%
-      |                                                        
-      |***********************************               |  70%
-      |                                                        
-      |************************************              |  72%
-      |                                                        
-      |*************************************             |  74%
-      |                                                        
-      |**************************************            |  76%
-      |                                                        
-      |***************************************           |  78%
-      |                                                        
-      |****************************************          |  80%
-      |                                                        
-      |*****************************************         |  82%
-      |                                                        
-      |******************************************        |  84%
-      |                                                        
-      |*******************************************       |  86%
-      |                                                        
-      |********************************************      |  88%
-      |                                                        
-      |*********************************************     |  90%
-      |                                                        
-      |**********************************************    |  92%
-      |                                                        
-      |***********************************************   |  94%
-      |                                                        
-      |************************************************  |  96%
-      |                                                        
-      |************************************************* |  98%
-      |                                                        
-      |**************************************************| 100%
-
-Pick the parameters to monitor
-
-Create a function to generate random initial values
-
-Compile the model with 3 chains and adapt.
-
-<span>\*\*</span>
-
-<span>\*\*</span>
-
-Draw 5000 posterior samples for each chain
-
-Take a look
-
-Continue sampling where we left off.
 
 Visualize
 
@@ -749,13 +414,11 @@ Visualize
 plot(jc2)
 ```
 
-![](lm-key_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-20-1.png)
+![](lm-key_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-22-1.png)
 
-Conclusions
-===========
+Discussion
+==========
 
-All of these methods give very similar results. Be wary of ideological people that try to run down either classical or Bayesian approaches to statistical inference. Itâ€™s easy to find corner cases where one or the other performs poorly, but for the most part, they are both reasonable ways of drawing inferences.
+The keys to other exercises either won't be made publically available, or they won't include so much explanation.
 
-The keys to other exercises either wonâ€™t be made publically available, or they wonâ€™t include so much explanation.
-
-[1] Although, it doesnâ€™t really matter in this case because the Monte Carlo error rate is already very low
+[1] Although, it doesn't really matter in this case because the Monte Carlo error rate is already very low

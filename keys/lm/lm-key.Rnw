@@ -448,14 +448,8 @@ plot(jc2)
 
 
 
-\section{Conclusions}
+\section{Discussion}
 
-
-All of these methods give very similar results. Be wary of ideological
-people that try to run down either classical or Bayesian approaches to
-statistical inference. It's easy to find corner cases where one or the
-other performs poorly, but for the most part, they are both reasonable
-ways of drawing inferences.
 
 The keys to other exercises either won't be made publically available,
 or they won't include so much explanation.
