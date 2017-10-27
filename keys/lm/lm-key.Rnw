@@ -1,9 +1,16 @@
+%% NOTE: If you have LaTeX installed, you can create a PDF from this
+%% file by opening R, installing the 'knitr' package and running the
+%% commands:
+%% knitr::knit("lm-key.Rnw")
+%% tools::texi2pdf("lm-key.tex")
+
+
 \documentclass[12pt]{article}
 
 \usepackage{parskip}
 \usepackage[hmargin=1in,vmargin=1in]{geometry}
 \usepackage[pdftex,hidelinks]{hyperref}
-
+\usepackage{verbatim}
 
 
 \begin{document}
@@ -37,7 +44,7 @@ beta1 <- 1
 sigma <- 2
 
 mu <- beta0 + beta1*x     # expected value of y
-y <- rnorm(n, mu, sigma)  # realized values (ie the response variable)
+y <- rnorm(n, mu, sigma)  # realized values (ie, the response variable)
 @
 
 \newpage
@@ -50,7 +57,7 @@ y <- rnorm(n, mu, sigma)  # realized values (ie the response variable)
 
 %\newpage
 
-Take a look at the simulated data:
+Take a look:
 <<scat>>=
 cbind(x,y)[1:4,] # First 4 observations
 plot(x,y)
@@ -154,7 +161,7 @@ the use of maximum likelihood instead of ordinary least-squares, which
 is used by \verb+lm+.
 
 
-\section{Joint posterior distribution}
+\section{Joint posterior distribution and Gibbs sampling}
 
 The joint posterior distribution is proportional to the product of the
 likelihood and the joint prior distribution. The priors are usually
@@ -168,7 +175,7 @@ where, as before, $p(y_i|\beta_0,\beta_1,\sigma^2) = \mathrm{Norm}(y_i|\mu_i,\si
 Here are three possibilities for the priors: $p(\beta_0) =
 \mathrm{Norm}(0,1000000)$, $p(\beta_1) = \mathrm{Norm}(0,1000000)$,
 $p(\sigma) = \mathrm{Unif}(0,1000)$. It's easy to show that the
-influence of the priors becomes minimal as the sample size increases.
+influence of the prior is negligible for moderate to large sample sizes.
 
 We can't easily compute the joint posterior distribution
 analytically because it would require computing the normalizing
@@ -229,10 +236,10 @@ an adaptive phase to do this automatically.
 \newpage
 \section{A Gibbs sampler in {\tt R}}
 
+%\footnotesize
 \scriptsize
 <<>>=
-lm.gibbs <- function(y, x, niter=10000,
-                     start, tune) {
+lm.gibbs <- function(y, x, niter=10000, start, tune) {
 samples <- matrix(NA, niter, 3)
 colnames(samples) <- c("beta0", "beta1", "sigma")
 beta0 <- start[1]; beta1 <- start[2]; sigma <- start[3]
@@ -280,7 +287,6 @@ for(iter in 1:niter) {
     if(runif(1) < mhr) {
         sigma <- sigma.cand
     }
-
     samples[iter,] <- c(beta0, beta1, sigma)
 }
 return(samples)
@@ -347,7 +353,7 @@ convergence and looking at the rejection rate.
 rejectionRate(mc1b)
 @
 These should be closer to 0.65 to increase our effective sample
-size\footnote{although it doesn't really matter in this case because
+size\footnote{Although, it doesn't really matter in this case because
   the Monte Carlo error rate is already very low}. Let's rerun the
 sampler with new tuning values and this time using 2 chains run in parallel:
 <<>>=
@@ -375,12 +381,84 @@ can look at diagnostics too:
 gelman.diag(mcp) # Point ests. should be <1.1 or so
 @
 
+Close the connections
+<<>>=
+stopCluster(cl)
+@
+
 
 
 \section{Using {\tt JAGS}}
 
 
+The first thing to do is create a text file with the model
+description. Mine is called \verb+lm-JAGS.jag+, and it looks like
+this:
 
+\fbox{\parbox{\linewidth}{\verbatiminput{lm-JAGS.jag}}}
+
+
+Now, we need to put the data in a named list.
+<<>>=
+jd <- list(y=y, x=x, n=n)
+str(jd)
+@
+
+Pick the parameters to monitor
+<<>>=
+jp <- c("beta0", "beta1", "sigma")
+@
+
+Create a function to generate random initial values
+<<>>=
+ji <- function() {
+    list(beta0=rnorm(1), beta1=rnorm(1), sigmaSq=runif(1))
+}
+ji()
+@
+
+
+Compile the model with 3 chains and adapt.
+<<jm,results='hide'>>=
+library(rjags)
+jm <- jags.model("lm-JAGS.jag", data=jd, inits=ji, n.chains=3,
+                 n.adapt=1000)
+@
+
+Draw 5000 posterior samples for each chain
+<<jc,results='hide'>>=
+jc <- coda.samples(jm, jp, n.iter=5000)
+@
+
+Take a look
+<<>>=
+summary(jc)
+@
+
+
+Continue sampling where we left off.
+<<jc2,results='hide'>>=
+jc2 <- coda.samples(jm, jp, n.iter=1000)
+@
+
+Visualize
+<<jc2-plot>>=
+plot(jc2)
+@
+
+
+
+\section{Conclusions}
+
+
+All of these methods give very similar results. Be wary of ideological
+people that try to run down either classical or Bayesian approaches to
+statistical inference. It's easy to find corner cases where one or the
+other performs poorly, but for the most part, they are both reasonable
+ways of drawing inferences.
+
+The keys to other exercises either won't be made publically available,
+or they won't include so much explanation.
 
 
 

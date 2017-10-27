@@ -1,15 +1,11 @@
-## Jags script for estimating the likelihood of linear model with 2 betas
-
-# Define the model fuction
 model {
 
-# Assign the distributions of variables
+# Priors
 beta0 ~ dnorm(0, 0.0001)
 beta1 ~ dunif(-100, 100)
 sigmaSq ~ dunif(0, 1000)
 sigma <- sqrt(sigmaSq)
-# Jags requires the use of tau for likelihood estimating
-tau <- 1/sigmaSq
+tau <- 1/sigmaSq  # dnorm wants precision instead of variance
 
 for(i in 1:n) {
   mu[i] <- beta0 + beta1*x[i]
