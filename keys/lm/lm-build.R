@@ -2,8 +2,6 @@
 library(knitr)
 knit("lm-key.Rnw")
 
-pandoc("lm-key.Rnw")
-
 ## Compile and open PDF
 tools::texi2pdf("lm-key.tex")
 system("open lm-key.pdf")
@@ -15,13 +13,15 @@ system("open lm-key.pdf")
 system("pandoc -s lm-key.tex --mathjax -o lm-key.html")
 
 
-## A tedious workaround is to create a .md and then manually insert
+## A tedious workaround is to create a .Rmd and then manually insert
 ## the R code where it's missing
 ## We could just start with .Rmd, but markdown isn't as flexible as Latex
 ## Uncomment the next region if you want to do this
 ## system("pandoc -s lm-key.tex --mathjax -t markdown -o lm-key.Rmd")
 
 ## Once the .Rmd file is ready, you can build html like this
+library(rmarkdown)
+render(input="lm-key.Rmd", output_format="github_document")
 render("lm-key.Rmd", "html_document")
 
 
@@ -36,12 +36,11 @@ render("lm-key.Rmd", "html_document")
 
 
 ## Convert the .R file to .html
-library(rmarkdown)
 knit("lm-key.Rnw", tangle=TRUE)
-render("lm-key.R", "all")
+##render("lm-key.R", "all")
 render("lm-key.R", "md_document")
 
-render("lm-key.Rnw", "html_document")
+##render("lm-key.Rnw", "html_document")
 
 
 ## Try with htlatex (fails?)
