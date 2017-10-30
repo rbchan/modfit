@@ -5,7 +5,7 @@ Warnell School of Forestry and Natural Resources
 University of Georgia
 <rchandler@warnell.uga.edu>
 
-\date{\today}
+*2017-10-30*
 
 
 # Introduction

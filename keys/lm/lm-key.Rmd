@@ -135,7 +135,7 @@ where, as before,
 $p(y_i|\beta_0,\beta_1,\sigma^2) = \text{Norm}(y_i|\mu_i,\sigma^2)$.
 Here are three possibilities for the priors: $p(\beta_0) =
 \text{Norm}(0,1000000)$, $p(\beta_1) = \rm{Norm}(0,1000000)$,
-$p(\sigma) = \mathrm{Unif}(0,1000)$. It's easy to show that the
+$p(\sigma) = \text{Unif}(0,1000)$. It's easy to show that the
 influence of the prior is negligible for moderate to large sample sizes.
 
 We can't easily compute the joint posterior distribution analytically
@@ -150,8 +150,8 @@ $$p(\beta_0|\beta_1,\sigma^2,{\bf y}) \propto \left\{\prod_{i=1}^n p(y_i|\beta_0
 This is the probability distribution for $\beta_0$, conditional on all
 the other parameters in the model and the data. We can sample from this
 distribution using the Metropolis-Hastings (MH) algorighm. For example,
-we can propose $\beta_0^{*} \sim \mathrm{Norm}(\beta_0,
-\mathrm{tune}_1)$ and accept this candidate value with probability
+we can propose $\beta_0^{*} \sim \text{Norm}(\beta_0,
+\text{tune}_1)$ and accept this candidate value with probability
 $\min(1,R)$ where $R$ is the MH acceptance ratio:
 $$R = \frac{\left\{\prod_{i=1}^n p(y_i|\beta_0^{*},\beta_1,\sigma^2)\right\}p(\beta_0^{*})p(\beta_0|\beta_0^{*})}{\left\{\prod_{i=1}^n p(y_i|\beta_0,\beta_1,\sigma^2)\right\}p(\beta_0)p(\beta_0^{*}|\beta_0)}$$
 Notice that the numerator and the denominator are made up of the product
@@ -179,7 +179,7 @@ algorithm. Here's a link to a handy cheat-sheat for conjugate priors:
 The last thing to mention about the HM algorithm is that you want to
 accept about 30-40% of the proposals, and you therefore have to ‘tune'
 the algorithm to make it efficient. This means fiddling with the
-parameter $\mathrm{tune}_1$ shown above. It's usually pretty easy to
+parameter $\text{tune}_1$ shown above. It's usually pretty easy to
 find good tuning values, but you can also use an adaptive phase to do
 this automatically.
 

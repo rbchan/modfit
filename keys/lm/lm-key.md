@@ -46,7 +46,7 @@ Likelihood
 
 The likelihood is the product of the *n* Gaussian densities:
 $$L(\\beta\_0,\\beta\_1,\\sigma^2; {\\bf y}) = \\prod\_{i=1}^n p(y\_i|\\beta\_0,\\beta\_1,\\sigma^2)$$
- where $p(y_i|\beta_0, \beta_1, \sigma)=\text{Norm}(y_i|\mu_i, \sigma)$ and *μ*<sub>*i*</sub> = *β*<sub>0</sub> + *β*<sub>1</sub>*x*<sub>*i*</sub>. The log-likelihood looks like this:
+ where *p*(*y*<sub>*i*</sub>|*β*<sub>0</sub>, *β*<sub>1</sub>, *σ*<sup>2</sup>)=Norm(*y*<sub>*i*</sub>|*μ*<sub>*i*</sub>, *σ*<sup>2</sup>) and *μ*<sub>*i*</sub> = *β*<sub>0</sub> + *β*<sub>1</sub>*x*<sub>*i*</sub>. The log-likelihood looks like this:
 $$\\ell(\\beta\_0,\\beta\_1,\\sigma^2; {\\bf y}) = \\sum\_{i=1}^n \\log(p(y\_i|\\beta\_0,\\beta\_1,\\sigma^2))$$
 
 Here is an R function to compute the negative log-likelihood:
@@ -166,11 +166,11 @@ Joint posterior distribution and Gibbs sampling
 
 The joint posterior distribution is proportional to the product of the likelihood and the joint prior distribution. The priors are usually taken to be independent, so in this case we have: *p*(*β*<sub>0</sub>, *β*<sub>1</sub>, *σ*<sup>2</sup>)=*p*(*β*<sub>0</sub>)*p*(*β*1)*p*(*σ*<sup>2</sup>), which means that we can write the posterior like this:
 $$p(\\beta\_0,\\beta\_1,\\sigma^2 | {\\bf y}) \\propto \\left\\{\\prod\_{i=1}^n p(y\_i|\\beta\_0,\\beta\_1,\\sigma^2)\\right\\}p(\\beta\_0)p(\\beta\_1)p(\\sigma^2)$$
- where, as before, *p*(*y*<sub>*i*</sub>|*β*<sub>0</sub>, *β*<sub>1</sub>, *σ*<sup>2</sup>)=Norm(*y*<sub>*i*</sub>|*μ*<sub>*i*</sub>, *σ*<sup>2</sup>). Here are three possibilities for the priors: *p*(*β*<sub>0</sub>)=Norm(0, 1000000), $p(\\beta\_1) = \\rm{Norm}(0,1000000)$, *p*(*σ*)=*U**n**i**f*(0, 1000). It's easy to show that the influence of the prior is negligible for moderate to large sample sizes.
+ where, as before, *p*(*y*<sub>*i*</sub>|*β*<sub>0</sub>, *β*<sub>1</sub>, *σ*<sup>2</sup>)=Norm(*y*<sub>*i*</sub>|*μ*<sub>*i*</sub>, *σ*<sup>2</sup>). Here are three possibilities for the priors: *p*(*β*<sub>0</sub>)=Norm(0, 1000000), $p(\\beta\_1) = \\rm{Norm}(0,1000000)$, *p*(*σ*)=Unif(0, 1000). It's easy to show that the influence of the prior is negligible for moderate to large sample sizes.
 
 We can't easily compute the joint posterior distribution analytically because it would require computing the normalizing constant in the previous equation. To do that, we would have to do a three-dimensional integration over the parameters. Fortunately, we can use MCMC to overcome the problem posed by intractable normalizing constants. Gibbs sampling is a type of MCMC algorithm that requires sampling each parameter from its full conditional distribution. The full conditional distribution for *β*<sub>0</sub> is:
 $$p(\\beta\_0|\\beta\_1,\\sigma^2,{\\bf y}) \\propto \\left\\{\\prod\_{i=1}^n p(y\_i|\\beta\_0,\\beta\_1,\\sigma^2)\\right\\}p(\\beta\_0)$$
- This is the probability distribution for *β*<sub>0</sub>, conditional on all the other parameters in the model and the data. We can sample from this distribution using the Metropolis-Hastings (MH) algorighm. For example, we can propose *β*<sub>0</sub><sup>\*</sup> ∼ *N**o**r**m*(*β*<sub>0</sub>, *t**u**n**e*<sub>1</sub>) and accept this candidate value with probability min(1, *R*) where *R* is the MH acceptance ratio:
+ This is the probability distribution for *β*<sub>0</sub>, conditional on all the other parameters in the model and the data. We can sample from this distribution using the Metropolis-Hastings (MH) algorighm. For example, we can propose *β*<sub>0</sub><sup>\*</sup> ∼ Norm(*β*<sub>0</sub>, tune<sub>1</sub>) and accept this candidate value with probability min(1, *R*) where *R* is the MH acceptance ratio:
 $$R = \\frac{\\left\\{\\prod\_{i=1}^n p(y\_i|\\beta\_0^{\*},\\beta\_1,\\sigma^2)\\right\\}p(\\beta\_0^{\*})p(\\beta\_0|\\beta\_0^{\*})}{\\left\\{\\prod\_{i=1}^n p(y\_i|\\beta\_0,\\beta\_1,\\sigma^2)\\right\\}p(\\beta\_0)p(\\beta\_0^{\*}|\\beta\_0)}$$
  Notice that the numerator and the denominator are made up of the product of the likelihood, the prior, and the proposal distributions. The likelihood and prior in the numerator are associated with the the candidate value. The proposal distribution in the numerator is the probability density associated with transitioning from *β*<sub>0</sub><sup>\*</sup> back to *β*<sub>0</sub>. The denominator has the likelihood and prior of the current values, along with the probability density associated with moving to the candidate from the current value of *β*<sub>0</sub>.
 
@@ -179,7 +179,7 @@ $$p(\\beta\_1|\\beta\_0,\\sigma^2,{\\bf y}) \\propto \\left\\{\\prod\_{i=1}^n p(
 
 $$p(\\sigma^2|\\beta\_0,\\sigma^2,{\\bf y}) \\propto \\left\\{\\prod\_{i=1}^n p(y\_i|\\beta\_0,\\beta\_1,\\sigma^2)\\right\\}p(\\sigma^2)$$
 
-A few things to note about the Metropolis-Hastings algorithm. First, if the proposal distribution is symmetric, you can ignore it when computing *R*. Second, if you use conjugate priors, you can often sample directly from the full conditional distributions rather than use the MH algorithm. Here's a link to a handy cheat-sheat for conjugate priors: <https://en.wikipedia.org/wiki/Conjugate_prior#Table_of_conjugate_distributions>. The last thing to mention about the HM algorithm is that you want to accept about 30-40% of the proposals, and you therefore have to â€˜tune' the algorithm to make it efficient. This means fiddling with the parameter *t**u**n**e*<sub>1</sub> shown above. It's usually pretty easy to find good tuning values, but you can also use an adaptive phase to do this automatically.
+A few things to note about the Metropolis-Hastings algorithm. First, if the proposal distribution is symmetric, you can ignore it when computing *R*. Second, if you use conjugate priors, you can often sample directly from the full conditional distributions rather than use the MH algorithm. Here's a link to a handy cheat-sheat for conjugate priors: <https://en.wikipedia.org/wiki/Conjugate_prior#Table_of_conjugate_distributions>. The last thing to mention about the HM algorithm is that you want to accept about 30-40% of the proposals, and you therefore have to â€˜tune' the algorithm to make it efficient. This means fiddling with the parameter tune<sub>1</sub> shown above. It's usually pretty easy to find good tuning values, but you can also use an adaptive phase to do this automatically.
 
 A Gibbs sampler in <span>R</span>
 =================================
@@ -370,13 +370,6 @@ Here's how to compile the model with 3 chains, adapt, and then draw 5000 posteri
 
 ``` r
 library(rjags)
-```
-
-    ## Linked to JAGS 4.3.0
-
-    ## Loaded modules: basemod,bugs
-
-``` r
 jm <- jags.model("lm-JAGS.jag", data=jd, inits=ji, n.chains=3,
                  n.adapt=1000)
 jc <- coda.samples(jm, jp, n.iter=5000)
@@ -398,16 +391,16 @@ summary(jc)
     ##    plus standard error of the mean:
     ## 
     ##          Mean     SD Naive SE Time-series SE
-    ## beta0 -0.8792 0.2192 0.001790       0.001775
-    ## beta1  0.8142 0.2156 0.001760       0.002261
-    ## sigma  2.1806 0.1564 0.001277       0.001693
+    ## beta0 -0.8798 0.2204 0.001800       0.001770
+    ## beta1  0.8221 0.2140 0.001747       0.002227
+    ## sigma  2.1805 0.1590 0.001298       0.001713
     ## 
     ## 2. Quantiles for each variable:
     ## 
     ##          2.5%     25%     50%     75%   97.5%
-    ## beta0 -1.3085 -1.0269 -0.8784 -0.7325 -0.4519
-    ## beta1  0.3915  0.6709  0.8143  0.9562  1.2405
-    ## sigma  1.9010  2.0701  2.1721  2.2800  2.5164
+    ## beta0 -1.3118 -1.0261 -0.8811 -0.7293 -0.4502
+    ## beta1  0.3914  0.6818  0.8237  0.9652  1.2428
+    ## sigma  1.8953  2.0696  2.1708  2.2819  2.5254
 
 Continue sampling where we left off.
 

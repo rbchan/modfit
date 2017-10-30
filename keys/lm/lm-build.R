@@ -1,6 +1,7 @@
 ## Create .tex file
 library(knitr)
 knit("lm-key.Rnw")
+knit("lm-key.Rnw", tangle=TRUE)
 
 ## Compile and open PDF
 tools::texi2pdf("lm-key.tex")
@@ -22,7 +23,7 @@ system("open lm-key.pdf")
 ## Once the .Rmd file is ready, you can build html like this
 library(rmarkdown)
 render(input="lm-key.Rmd", output_format="github_document")
-render("lm-key.Rmd", "html_document")
+##render("lm-key.Rmd", "html_document")
 
 
 
@@ -36,7 +37,6 @@ render("lm-key.Rmd", "html_document")
 
 
 ## Convert the .R file to .html
-knit("lm-key.Rnw", tangle=TRUE)
 ## render("lm-key.R", "all")
 ## render("lm-key.R", "md_document")
 
