@@ -14,10 +14,11 @@ viewed directly in github. I recommend that you view the .md files in
 Chrome with the 'GitHub with MathJax' extension enabled so that you
 can read the equations. 
 
-Most keys will not be available. **To view the keys** that are (eg, the lm key),
-you can view it as a PDF by running 'knitr' on the .Rnw file. See the
-stats/keys/lm/lm-build.R file for examples. There will also be a
-markdown file, but the equations may not be rendered correctly. 
+Most keys will not be available. **To view the keys** that are
+available (eg, the lm key), you can create a PDF by running 'knitr' on
+the .Rnw file. See the stats/keys/lm/lm-build.R file for
+examples. There will also be a markdown file, but the equations may
+not be rendered correctly.
 
 There are likely to be mistakes in these exercises. Feel free to let
 me know if you find any, and I will try to correct them.

@@ -38,9 +38,9 @@ where $\epsilon_i \sim \mathrm{Norm}(0, \sigma^2)$.
 1. Simulate a dataset in **R** using $\beta_0=-1$, $\beta_1=1$,
     $\sigma^2=4$. Let $n=100$ be the sample size, and generate a
     single continuous covariate from a standard normal distribution.
-2. Write the equation for the likelihood in \LaTeX.
+2. Write the equation for the likelihood in LaTeX.
 3. Obtain the MLEs in **R** by minimizing the negative log-likelihood
-4. Write the joint posterior distribution in \LaTeX
+4. Write the joint posterior distribution in LaTeX
 5. Describe a Gibbs sampler for obtaining posterior samples
 6. Implement the Gibbs sampler in **R** using the dataset that
     you simulated earlier.
