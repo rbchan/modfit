@@ -25,15 +25,11 @@ me know if you find any, and I will try to correct them.
 Simple linear regression is one of the most basic statistical
 models. There are several ways to describe the model. Here is one
 option:
-\[
-  y_i \sim \mathrm{Norm}(\mu_i,\sigma^2)
-\]
+$$y_i \sim \mathrm{Norm}(\mu_i,\sigma^2)$$
 where $\mu_i = \beta_0 + \beta_1 x_i$ and $x_i$ is a continuous covariate.
 
 Here's another:
-\[
-  y_i = \beta_0 + \beta_1 x_i + \epsilon_i
-\]
+$$y_i = \beta_0 + \beta_1 x_i + \epsilon_i$$
 where $\epsilon_i \sim \mathrm{Norm}(0, \sigma^2)$.
 
 # Assignment

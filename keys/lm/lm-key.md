@@ -46,8 +46,8 @@ Likelihood
 
 The likelihood is the product of the *n* Gaussian densities:
 $$L(\\beta\_0,\\beta\_1,\\sigma^2; {\\bf y}) = \\prod\_{i=1}^n p(y\_i|\\beta\_0,\\beta\_1,\\sigma^2)$$
- where *p*(*y*<sub>*i*</sub>|*β*<sub>0</sub>, *β*<sub>1</sub>, *σ*<sup>2</sup>)=*N**o**r**m*(*y*<sub>*i*</sub>|*μ*<sub>*i*</sub>, *σ*<sup>2</sup>) and *μ*<sub>*i*</sub> = *β*<sub>0</sub> + *β*<sub>1</sub>*x*<sub>*i*</sub>. The log-likelihood looks like this:
-$$\\l(\\beta\_0,\\beta\_1,\\sigma^2; {\\bf y}) = \\sum\_{i=1}^n \\log(p(y\_i|\\beta\_0,\\beta\_1,\\sigma^2))$$
+ where $p(y_i|\beta_0, \beta_1, \sigma)=\text{Norm}(y_i|\mu_i, \sigma)$ and *μ*<sub>*i*</sub> = *β*<sub>0</sub> + *β*<sub>1</sub>*x*<sub>*i*</sub>. The log-likelihood looks like this:
+$$\\ell(\\beta\_0,\\beta\_1,\\sigma^2; {\\bf y}) = \\sum\_{i=1}^n \\log(p(y\_i|\\beta\_0,\\beta\_1,\\sigma^2))$$
 
 Here is an R function to compute the negative log-likelihood:
 
@@ -166,7 +166,7 @@ Joint posterior distribution and Gibbs sampling
 
 The joint posterior distribution is proportional to the product of the likelihood and the joint prior distribution. The priors are usually taken to be independent, so in this case we have: *p*(*β*<sub>0</sub>, *β*<sub>1</sub>, *σ*<sup>2</sup>)=*p*(*β*<sub>0</sub>)*p*(*β*1)*p*(*σ*<sup>2</sup>), which means that we can write the posterior like this:
 $$p(\\beta\_0,\\beta\_1,\\sigma^2 | {\\bf y}) \\propto \\left\\{\\prod\_{i=1}^n p(y\_i|\\beta\_0,\\beta\_1,\\sigma^2)\\right\\}p(\\beta\_0)p(\\beta\_1)p(\\sigma^2)$$
- where, as before, *p*(*y*<sub>*i*</sub>|*β*<sub>0</sub>, *β*<sub>1</sub>, *σ*<sup>2</sup>)=*N**o**r**m*(*y*<sub>*i*</sub>|*μ*<sub>*i*</sub>, *σ*<sup>2</sup>). Here are three possibilities for the priors: *p*(*β*<sub>0</sub>)=*N**o**r**m*(0, 1000000), *p*(*β*<sub>1</sub>)=*N**o**r**m*(0, 1000000), *p*(*σ*)=*U**n**i**f*(0, 1000). It's easy to show that the influence of the prior is negligible for moderate to large sample sizes.
+ where, as before, *p*(*y*<sub>*i*</sub>|*β*<sub>0</sub>, *β*<sub>1</sub>, *σ*<sup>2</sup>)=Norm(*y*<sub>*i*</sub>|*μ*<sub>*i*</sub>, *σ*<sup>2</sup>). Here are three possibilities for the priors: *p*(*β*<sub>0</sub>)=Norm(0, 1000000), $p(\\beta\_1) = \\rm{Norm}(0,1000000)$, *p*(*σ*)=*U**n**i**f*(0, 1000). It's easy to show that the influence of the prior is negligible for moderate to large sample sizes.
 
 We can't easily compute the joint posterior distribution analytically because it would require computing the normalizing constant in the previous equation. To do that, we would have to do a three-dimensional integration over the parameters. Fortunately, we can use MCMC to overcome the problem posed by intractable normalizing constants. Gibbs sampling is a type of MCMC algorithm that requires sampling each parameter from its full conditional distribution. The full conditional distribution for *β*<sub>0</sub> is:
 $$p(\\beta\_0|\\beta\_1,\\sigma^2,{\\bf y}) \\propto \\left\\{\\prod\_{i=1}^n p(y\_i|\\beta\_0,\\beta\_1,\\sigma^2)\\right\\}p(\\beta\_0)$$
@@ -370,6 +370,13 @@ Here's how to compile the model with 3 chains, adapt, and then draw 5000 posteri
 
 ``` r
 library(rjags)
+```
+
+    ## Linked to JAGS 4.3.0
+
+    ## Loaded modules: basemod,bugs
+
+``` r
 jm <- jags.model("lm-JAGS.jag", data=jd, inits=ji, n.chains=3,
                  n.adapt=1000)
 jc <- coda.samples(jm, jp, n.iter=5000)
@@ -391,16 +398,16 @@ summary(jc)
     ##    plus standard error of the mean:
     ## 
     ##          Mean     SD Naive SE Time-series SE
-    ## beta0 -0.8778 0.2204 0.001799       0.001799
-    ## beta1  0.8215 0.2109 0.001722       0.002261
-    ## sigma  2.1841 0.1599 0.001305       0.001739
+    ## beta0 -0.8792 0.2192 0.001790       0.001775
+    ## beta1  0.8142 0.2156 0.001760       0.002261
+    ## sigma  2.1806 0.1564 0.001277       0.001693
     ## 
     ## 2. Quantiles for each variable:
     ## 
     ##          2.5%     25%     50%     75%   97.5%
-    ## beta0 -1.3101 -1.0244 -0.8764 -0.7313 -0.4404
-    ## beta1  0.4061  0.6823  0.8219  0.9611  1.2379
-    ## sigma  1.8996  2.0705  2.1760  2.2864  2.5220
+    ## beta0 -1.3085 -1.0269 -0.8784 -0.7325 -0.4519
+    ## beta1  0.3915  0.6709  0.8143  0.9562  1.2405
+    ## sigma  1.9010  2.0701  2.1721  2.2800  2.5164
 
 Continue sampling where we left off.
 
