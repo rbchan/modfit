@@ -23,7 +23,7 @@ system("open lm-key.pdf")
 ## Once the .Rmd file is ready, you can build html like this
 library(rmarkdown)
 render(input="lm-key.Rmd", output_format="github_document")
-##render("lm-key.Rmd", "html_document")
+render("lm-key.Rmd", "html_document")
 
 
 

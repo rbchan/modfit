@@ -41,7 +41,7 @@ Likelihood
 ==========
 
 The likelihood is the product of the $n$ Gaussian densities:
-$$L(\beta_0,\beta_1,\sigma^2; {\bf y}) = \prod_{i=1}^n p(y_i|\beta_0,\beta_1,\sigma^2)$$
+$L(\beta_0,\beta_1,\sigma^2; {\bf y}) = \prod_{i=1}^n p(y_i|\beta_0,\beta_1,\sigma^2)$
 where $p(y_i|\beta_0,\beta_1,\sigma^2) =
 \text{Norm}(y_i|\mu_i,\sigma^2)$ and $\mu_i = \beta_0 +
 \beta_1x_i$. The log-likelihood looks like this:
