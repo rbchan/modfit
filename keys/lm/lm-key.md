@@ -44,8 +44,10 @@ plot(x,y)
 Likelihood
 ==========
 
-The likelihood is the product of the *n* Gaussian densities: $latex L(\\beta\_0,\\beta\_1,\\sigma^2; {\\bf y}) = \\prod\_{i=1}^n p(y\_i|\\beta\_0,\\beta\_1,\\sigma^2)$ where *l**a**t**e**x**p*(*y*<sub>*i*</sub>|*β*<sub>0</sub>, *β*<sub>1</sub>, *σ*<sup>2</sup>)=Norm(*y*<sub>*i*</sub>|*μ*<sub>*i*</sub>, *σ*<sup>2</sup>) and *μ*<sub>*i*</sub> = *β*<sub>0</sub> + *β*<sub>1</sub>*x*<sub>*i*</sub>. The log-likelihood looks like this:
-$$latex \\ell(\\beta\_0,\\beta\_1,\\sigma^2; {\\bf y}) = \\sum\_{i=1}^n \\log(p(y\_i|\\beta\_0,\\beta\_1,\\sigma^2))$$
+The likelihood is the product of the *n* Gaussian densities:
+$$L(\\beta\_0,\\beta\_1,\\sigma^2; {\\bf y}) = \\prod\_{i=1}^n p(y\_i|\\beta\_0,\\beta\_1,\\sigma^2)$$
+ where *p*(*y*<sub>*i*</sub>|*β*<sub>0</sub>, *β*<sub>1</sub>, *σ*<sup>2</sup>)=Norm(*y*<sub>*i*</sub>|*μ*<sub>*i*</sub>, *σ*<sup>2</sup>) and *μ*<sub>*i*</sub> = *β*<sub>0</sub> + *β*<sub>1</sub>*x*<sub>*i*</sub>. The log-likelihood looks like this:
+$$\\ell(\\beta\_0,\\beta\_1,\\sigma^2; {\\bf y}) = \\sum\_{i=1}^n \\log(p(y\_i|\\beta\_0,\\beta\_1,\\sigma^2))$$
 
 Here is an R function to compute the negative log-likelihood:
 
@@ -389,16 +391,16 @@ summary(jc)
     ##    plus standard error of the mean:
     ## 
     ##          Mean     SD Naive SE Time-series SE
-    ## beta0 -0.8792 0.2187 0.001786       0.001800
-    ## beta1  0.8198 0.2155 0.001760       0.002247
-    ## sigma  2.1835 0.1612 0.001316       0.001809
+    ## beta0 -0.8796 0.2192 0.001790       0.001852
+    ## beta1  0.8173 0.2100 0.001714       0.002221
+    ## sigma  2.1813 0.1580 0.001290       0.001717
     ## 
     ## 2. Quantiles for each variable:
     ## 
-    ##          2.5%    25%     50%     75%   97.5%
-    ## beta0 -1.3141 -1.026 -0.8789 -0.7349 -0.4498
-    ## beta1  0.3909  0.677  0.8194  0.9635  1.2455
-    ## sigma  1.8995  2.070  2.1719  2.2875  2.5270
+    ##          2.5%    25%     50%     75%  97.5%
+    ## beta0 -1.3114 -1.026 -0.8791 -0.7341 -0.449
+    ## beta1  0.4067  0.678  0.8183  0.9587  1.226
+    ## sigma  1.8938  2.071  2.1733  2.2812  2.513
 
 Continue sampling where we left off.
 
