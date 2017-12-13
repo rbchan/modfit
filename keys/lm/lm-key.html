@@ -373,10 +373,8 @@ ji()</code></pre>
 ## $sigmaSq
 ## [1] 0.07151817</code></pre>
 <p>Here’s how to compile the model with 3 chains, adapt, and then draw 5000 posterior samples for each chain.</p>
-<pre class="r"><code>library(rjags)</code></pre>
-<pre><code>## Linked to JAGS 4.3.0</code></pre>
-<pre><code>## Loaded modules: basemod,bugs</code></pre>
-<pre class="r"><code>jm &lt;- jags.model(&quot;lm-JAGS.jag&quot;, data=jd, inits=ji, n.chains=3,
+<pre class="r"><code>library(rjags)
+jm &lt;- jags.model(&quot;lm-JAGS.jag&quot;, data=jd, inits=ji, n.chains=3,
                  n.adapt=1000)
 jc &lt;- coda.samples(jm, jp, n.iter=5000)</code></pre>
 <p>Take a look:</p>
@@ -391,16 +389,16 @@ jc &lt;- coda.samples(jm, jp, n.iter=5000)</code></pre>
 ##    plus standard error of the mean:
 ## 
 ##          Mean     SD Naive SE Time-series SE
-## beta0 -0.8783 0.2189 0.001787       0.001793
-## beta1  0.8207 0.2110 0.001723       0.002239
-## sigma  2.1808 0.1586 0.001295       0.001697
+## beta0 -0.8792 0.2175 0.001776       0.001792
+## beta1  0.8204 0.2157 0.001761       0.002252
+## sigma  2.1833 0.1588 0.001297       0.001750
 ## 
 ## 2. Quantiles for each variable:
 ## 
 ##          2.5%     25%     50%     75%   97.5%
-## beta0 -1.3080 -1.0217 -0.8793 -0.7341 -0.4416
-## beta1  0.4079  0.6814  0.8203  0.9621  1.2323
-## sigma  1.8959  2.0684  2.1720  2.2833  2.5154</code></pre>
+## beta0 -1.3086 -1.0257 -0.8773 -0.7325 -0.4573
+## beta1  0.3963  0.6759  0.8215  0.9663  1.2399
+## sigma  1.8971  2.0727  2.1734  2.2832  2.5196</code></pre>
 <p>Continue sampling where we left off.</p>
 <pre class="r"><code>jc2 &lt;- coda.samples(jm, jp, n.iter=1000)</code></pre>
 <p>Visualize</p>
