@@ -80,11 +80,11 @@ data and a user specified prior distribution. The posterior distribution
 describes our uncertainty about the parameters.
 
 The posterior distribution of the linear model parameters is:
-$$p(\beta_0,\beta_1,\sigma|{\bf y}) \propto \left\{\prod_{i=1}^n
-p(y_i|\beta_0,\beta_1,\sigma)\right\}p(\beta_0,\beta_1,\sigma)$$ where
-the first term on the right-hand side of the equation should look
-familiar because it is the likelihood discussed above. The second term
-is the prior distribution of the parameters.
+$$p(\beta_0,\beta_1,\sigma|{\bf y}) \propto \big\{\prod_{i=1}^n
+p(y_i|\beta_0,\beta_1,\sigma)\big\}p(\beta_0,\beta_1,\sigma)$$ where the
+first term on the right-hand side of the equation should look familiar
+because it is the likelihood discussed above. The second term is the
+prior distribution of the parameters.
 
 Normally, the prior distributions are taken to be independent of one
 another, and if little prior information is available, diffuse Gaussian
