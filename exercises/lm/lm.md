@@ -1,51 +1,187 @@
 Exercise I: Fitting a linear model using maximum likelihood and Gibbs sampling
-================
-Richard Chandler
-Warnell School of Forestry and Natural Resources
-University of Georgia
-<rchandler@warnell.uga.edu>
+==============================================================================
 
-*2017-10-30*
+Richard Chandler Warnell School of Forestry and Natural Resources
+University of Georgia <rchandler@warnell.uga.edu>
 
+The model
+=========
 
-# Introduction
+Simple linear regression is one of the most basic statistical models.
+There are several ways to describe the model. Here is one option:
+$$y_i \sim \mathrm{Norm}(\mu_i,\sigma^2) \qquad \mathrm{for} \quad i=1,\dots,n $$
+where $\mu_i = \beta_0 + \beta_1 x_i$ and $x_i$ is a continuous
+covariate.
 
-These assignments are meant for new graduate students in my lab. They
-assume that students have some basic familiarity with statistical
-inference, but most students will need help getting through the first
-few exercises before they are comfortable with the process of writing
-likelihood equations and joint posterior distributions.
+Here's another: $$y_i = \beta_0 + \beta_1 x_i + \epsilon_i$$ where
+$\epsilon_i \sim \mathrm{Norm}(0, \sigma^2)$.
 
-There are likely to be mistakes in these exercises. Feel free to let
-me know if you find any, and I will try to correct them.
+A third option is to use matrix notation:
+$${\bf y} = {\bf X}{\boldsymbol \beta} + {\boldsymbol \varepsilon}$$
+where ${\bf y}$ is the response vector and $\bf X$ is the design matrix,
+a $n \times p$ matrix with the the first column being a vector of 1's
+corresponding to the intercept and the other columns containing the
+covariates, which will be dummy variables for factors. In simple linear
+regression, there is only one covariate, so $p=2$. The vector of
+coefficients to be estimated is denoted by $\boldsymbol \beta$, and
+$\boldsymbol \varepsilon$ is the vector of residuals.
 
+Inference
+=========
 
-# The model
+A linear regression can be fitted to the data using ordinary least
+squares (OLS), which is fast and convienient, but not generalizable to
+non-Gaussian problems. We will focus instead on maximum likelihood and
+MCMC for performing classical and Bayesian inference, respectively.
 
-Simple linear regression is one of the most basic statistical
-models. There are several ways to describe the model. Here is one
-option:
-$$y_i \sim \mathrm{Norm}(\mu_i,\sigma^2)$$
-where $\mu_i = \beta_0 + \beta_1 x_i$ and $x_i$ is a continuous covariate.
+Classical, likelihood-based approach
+------------------------------------
 
-Here's another:
-$$y_i = \beta_0 + \beta_1 x_i + \epsilon_i$$
-where $\epsilon_i \sim \mathrm{Norm}(0, \sigma^2)$.
+The likelihood is the joint probability density of the data viewed as a
+function of the parameters. In this case, the probability density for a
+single observation is
+$p(y_i|\beta_0,\beta_1,\sigma)=\mathrm{Norm}(\mu_i,\sigma^2)$, and under
+the standard independence assumption, the joint density is the product
+of the $n$ densities:
+$$L(\beta_0,\beta_1,\sigma|{\bf y}) = \prod_{i=1}^n
+p(y_i|\beta_0,\beta_1,\sigma)$$
 
-# Assignment
+In practice, the likelihood is evaluated on the log scale to avoid
+computational problems that can result from multiplying small
+probabilities. The log-likelihood is just this:
+$$l(\beta_0,\beta_1,\sigma|y_i) = \sum_{i=1}^n
+\log(p(y_i|\beta_0,\beta_1,\sigma))$$
 
+In **R**, most of the optimizers want the negative log-likelihood, which
+we can write like this:
 
-1. Simulate a dataset in **R** using $\beta_0=-1$, $\beta_1=1$,
-    $\sigma^2=4$. Let $n=100$ be the sample size, and generate a
-    single continuous covariate from a standard normal distribution.
-2. Write the equation for the likelihood in LaTeX.
-3. Obtain the MLEs in **R** by minimizing the negative log-likelihood
-4. Write the joint posterior distribution in LaTeX
-5. Describe a Gibbs sampler for obtaining posterior samples
-6. Implement the Gibbs sampler in **R** using the dataset that
-    you simulated earlier.
-7. Use **JAGS** to fit the model.
+``` {.r}
+lm.like <- function(pars,y,x) {
+    beta0 <- pars[1]
+    beta1 <- pars[2]
+    sigma <- pars[3]
+    mu <- beta0 + beta1*x
+    return(-sum(dnorm(y, mu, sigma, log=TRUE)))
+}
+```
 
+Plugging in values for the parameters will return the negative
+log-likelihood for a particular dataset. The goal of classical inference
+is to find the parameters that maximize the likelihood. It's easiest to
+let computers do the work, and **R** has many functions for the task,
+including `optim` and `nlm`.
 
+Bayesian approach
+-----------------
 
+Bayesian inference is also based on the likelihood, but the goal is to
+characterize the posterior distribution of the parameters, given the
+data and a user specified prior distribution. The posterior distribution
+describes our uncertainty about the parameters.
+
+The posterior distribution of the linear model parameters is:
+$$p(\beta_0,\beta_1,\sigma|{\bf y}) \propto \left\{\prod_{i=1}^n
+p(y_i|\beta_0,\beta_1,\sigma)\right\}p(\beta_0,\beta_1,\sigma)$$ where
+the first term on the right-hand side of the equation should look
+familiar because it is the likelihood discussed above. The second term
+is the prior distribution of the parameters.
+
+Normally, the prior distributions are taken to be independent of one
+another, and if little prior information is available, diffuse Gaussian
+or uniform distributions are often used to characterize the lack of
+knowledge. The prior distributions will have little effect on the
+posterior distribution if data are informative about the parameters of
+interest. However, it's always important to assess the influence of the
+prior.
+
+The computation challenge facing Bayesians is that it is rarely possible
+to compute the posterior distribution directly because it is a
+multivarite distribution with an intractible normalizing constant. This
+seemly enormous problem can be resolved using Markov chain Monte Carlo
+methods, among others. Gibbs sampling is the most general MCMC
+technique, and it involves sequentially sampling each parameter from its
+full conditional distribution -- the probability distribution of the
+parameter of interest, conditional on all the other paramters in the
+model. It's amazing that this works, but it does. See elsewhere for
+proofs. For a linear model, a Gibbs sampler would involve repeating the
+following steps several thousand times:
+
+------------------------------------------------------------------------
+
+#### Step 1: Sample $\beta_0$ from its full conditional distribution:
+
+$$p(\beta_0|\beta_1,\sigma) \propto \left\{\prod_{i=1}^n p(y_i|\beta_0,\beta_1,\sigma)\right\}p(\beta_0)$$
+
+#### Step 2: Sample $\beta_1$ from its full conditional distribution:
+
+$$p(\beta_1|\beta_0,\sigma) \propto \left\{\prod_{i=1}^n p(y_i|\beta_0,\beta_1,\sigma)\right\}p(\beta_1)$$
+
+#### Step 3: Sample $\sigma$ from its full conditional distribution:
+
+$$p(\sigma|\beta_0,\beta_1) \propto \left\{\prod_{i=1}^n
+p(y_i|\beta_0,\beta_1,\sigma)\right\}p(\sigma)$$
+
+------------------------------------------------------------------------
+
+So, what do the full conditional distributions looks like? In this case,
+if conjugate prior distributions are used, the full conditional
+distributions are Gaussian for the $\beta$'s and gamma for $\sigma$. A
+great cheat sheet can be found
+[here](https://en.wikipedia.org/wiki/Conjugate_prior#Table_of_conjugate_distributions).
+However, we often don't want to restrict ourselves to conjugate priors,
+in which case we can use a Metropolis-Hastings algorithm to indirectly
+sample from each full conditional distribution. These details are
+demonstrated in the following example.
+
+Example
+=======
+
+Simulate a dataset
+------------------
+
+Here's some **R** code to simulate $x$ and $y$:
+
+``` {.r}
+set.seed(348720) # To make this reproducible
+n <- 100
+x <- rnorm(n) # Covariate
+beta0 <- -1
+beta1 <- 1
+sigma <- 2
+
+mu <- beta0 + beta1*x     # expected value of y
+y <- rnorm(n, mu, sigma)  # realized values (ie, the response variable)
+```
+
+Take a look:
+
+``` {.r}
+cbind(x,y)[1:4,] # First 4 observations
+```
+
+    ##                x          y
+    ## [1,] -0.93295514 -0.2223842
+    ## [2,] -0.02648071 -3.7537644
+    ## [3,] -0.23166802 -0.7151488
+    ## [4,]  1.64687862 -0.6357651
+
+``` {.r}
+plot(x,y)
+```
+
+![](lm_files/figure-markdown/unnamed-chunk-3-1.png)
+
+Assignment
+==========
+
+1.  Simulate a dataset in **R** using $\beta_0=-1$, $\beta_1=1$,
+    $\sigma^2=4$. Let $n=100$ be the sample size, and generate a single
+    continuous covariate from a standard normal distribution.
+2.  Write the equation for the likelihood in LaTeX.
+3.  Obtain the MLEs in **R** by minimizing the negative log-likelihood
+4.  Write the joint posterior distribution in LaTeX
+5.  Describe a Gibbs sampler for obtaining posterior samples
+6.  Implement the Gibbs sampler in **R** using the dataset that you
+    simulated earlier.
+7.  Use **JAGS** to fit the model.
 

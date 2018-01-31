@@ -160,16 +160,16 @@ p(y_i|\beta_0,\beta_1,\sigma)\right\}p(\beta_0,\beta_1,\sigma)\]</span> where th
 <hr />
 <div id="step-1-sample-beta_0-from-its-full-conditional-distribution" class="section level4">
 <h4>Step 1: Sample <span class="math inline">\(\beta_0\)</span> from its full conditional distribution:</h4>
-<p><span class="math display">\[p(\beta_0;\beta_1,\sigma) \propto \left\{\prod_{i=1}^n p(y_i|\beta_0,\beta_1,\sigma)\right\}p(\beta_0)\]</span></p>
+<p><span class="math display">\[p(\beta_0|\beta_1,\sigma) \propto \left\{\prod_{i=1}^n p(y_i|\beta_0,\beta_1,\sigma)\right\}p(\beta_0)\]</span></p>
 </div>
 <div id="step-2-sample-beta_1-from-its-full-conditional-distribution" class="section level4">
 <h4>Step 2: Sample <span class="math inline">\(\beta_1\)</span> from its full conditional distribution:</h4>
-<p><span class="math display">\[p(\beta_1;\beta_0,\sigma) \propto \left\{\prod_{i=1}^n p(y_i|\beta_0,\beta_1,\sigma)\right\}p(\beta_1)\]</span></p>
+<p><span class="math display">\[p(\beta_1|\beta_0,\sigma) \propto \left\{\prod_{i=1}^n p(y_i|\beta_0,\beta_1,\sigma)\right\}p(\beta_1)\]</span></p>
 </div>
 <div id="step-3-sample-sigma-from-its-full-conditional-distribution" class="section level4">
 <h4>Step 3: Sample <span class="math inline">\(\sigma\)</span> from its full conditional distribution:</h4>
-<p><span class="math display">\[p(\sigma;\beta_0,\beta_1) \propto \left\{\prod_{i=1}^n
-p(y_i|\beta_0,\beta_1,\sigma)\right\}p(sigma)\]</span></p>
+<p><span class="math display">\[p(\sigma|\beta_0,\beta_1) \propto \left\{\prod_{i=1}^n
+p(y_i|\beta_0,\beta_1,\sigma)\right\}p(\sigma)\]</span></p>
 <hr />
 <p>So, what do the full conditional distributions looks like? In this case, if conjugate prior distributions are used, the full conditional distributions are Gaussian for the <span class="math inline">\(\beta\)</span>’s and gamma for <span class="math inline">\(\sigma\)</span>. A great cheat sheet can be found <a href="https://en.wikipedia.org/wiki/Conjugate_prior#Table_of_conjugate_distributions">here</a>. However, we often don’t want to restrict ourselves to conjugate priors, in which case we can use a Metropolis-Hastings algorithm to indirectly sample from each full conditional distribution. These details are demonstrated in the following example.</p>
 </div>
