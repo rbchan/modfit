@@ -1,5 +1,5 @@
 # stats
-Exercises in model fitting for grad students
+## Exercises in model fitting for grad students
 
 These assignments are meant for new graduate students in [my
 lab](http://chandlerlab.uga.edu/). They assume that students have some

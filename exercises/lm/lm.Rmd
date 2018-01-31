@@ -1,0 +1,126 @@
+Exercise I: Fitting a linear model using maximum likelihood and Gibbs sampling
+================
+Richard Chandler
+Warnell School of Forestry and Natural Resources
+University of Georgia
+<rchandler@warnell.uga.edu>
+
+
+# The model
+
+Simple linear regression is one of the most basic statistical
+models. There are several ways to describe the model. Here is one
+option:
+$$y_i \sim \mathrm{Norm}(\mu_i,\sigma^2) \qquad \mathrm{for} \quad i=1,\dots,n $$
+where $\mu_i = \beta_0 + \beta_1 x_i$ and $x_i$ is a continuous covariate.
+
+Here's another:
+$$y_i = \beta_0 + \beta_1 x_i + \epsilon_i$$
+where $\epsilon_i \sim \mathrm{Norm}(0, \sigma^2)$.
+
+A third option is to use matrix notation: 
+$${\bf y} = {\bf X}{\boldsymbol \beta} + {\boldsymbol \varepsilon}$$
+where ${\bf y}$ is the response vector and $\bf X$ is the design
+matrix, a $n \times p$ matrix with the the first column being a vector
+of 1's corresponding to the intercept and the other columns containing
+the covariates, which will be dummy variables for
+factors. In simple linear regression, there is only one covariate, so
+$p=2$. The vector of coefficients to be estimated is denoted by
+$\boldsymbol \beta$, and $\boldsymbol \varepsilon$ is the vector of
+residuals.
+
+# Inference
+
+A linear regression can be fitted to the data using ordinary least
+squares (OLS), which is fast and convienient, but not generalizable to
+non-Gaussian problems. We will focus instead on maximum likelihood and
+MCMC for performing classical and Bayesian inference, respectively. 
+
+
+## Classical, likelihood-based approach
+
+The likelihood is the joint probability density of the data viewed as
+a function of the parameters. In this case, the probability density
+for a single observation is 
+$p(y_i|\beta_0,\beta_1,\sigma)=\mathrm{Norm}(\mu_i,\sigma^2)$, and
+under standard independence assumption, the
+joint density is the product of the $n$ densities:
+$$L(y_i;\beta_0,\beta_1,\sigma) = \prod_{i=1}^n
+p(y_i|\beta_0,\beta_1,\sigma)$$
+
+In practice, the likelihood is evaluated on the log scale to avoid
+computational problems that can result from multiplying small
+probabilities. The log-likelihood is just this:
+$$l(y_i;\beta_0,\beta_1,\sigma) = \sum_{i=1}^n
+\log(p(y_i|\beta_0,\beta_1,\sigma))$$
+
+
+In __R__, most of the optimizers want the negative log-likelihood,
+which we can write like this:
+```{R}
+lm.like <- function(pars,y,x) {
+    beta0 <- pars[1]
+    beta1 <- pars[2]
+    sigma <- pars[3]
+    mu <- beta0 + beta1*x
+    return(-sum(dnorm(y, mu, sigma, log=TRUE)))
+}
+```
+Plugging in values for the parameters will return the negative
+log-likelihood for a particular dataset. The goal of classical
+inference is to find the parameters that maximize the
+likelihood. Bayesian inference is also based on the likelihood, but
+the goal is to characterize the posterior distribution of the
+parameters, given the data and a user specified prior distribution.
+
+## Bayesian approach
+
+
+
+# Example
+
+## Simulate a dataset
+
+
+Here's some **R** code to simulate $x$ and $y$:
+
+```{R}
+set.seed(348720) # To make this reproducible
+n <- 100
+x <- rnorm(n) # Covariate
+beta0 <- -1
+beta1 <- 1
+sigma <- 2
+
+mu <- beta0 + beta1*x     # expected value of y
+y <- rnorm(n, mu, sigma)  # realized values (ie, the response variable)
+```
+
+
+
+Take a look:
+```{R}
+cbind(x,y)[1:4,] # First 4 observations
+plot(x,y)
+```
+
+
+
+
+# Assignment
+
+
+1. Simulate a dataset in **R** using $\beta_0=-1$, $\beta_1=1$,
+    $\sigma^2=4$. Let $n=100$ be the sample size, and generate a
+    single continuous covariate from a standard normal distribution.
+2. Write the equation for the likelihood in LaTeX.
+3. Obtain the MLEs in **R** by minimizing the negative log-likelihood
+4. Write the joint posterior distribution in LaTeX
+5. Describe a Gibbs sampler for obtaining posterior samples
+6. Implement the Gibbs sampler in **R** using the dataset that
+    you simulated earlier.
+7. Use **JAGS** to fit the model.
+
+
+
+
