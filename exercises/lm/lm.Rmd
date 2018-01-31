@@ -43,15 +43,16 @@ The likelihood is the joint probability density of the data viewed as
 a function of the parameters. In this case, the probability density
 for a single observation is 
 $p(y_i|\beta_0,\beta_1,\sigma)=\mathrm{Norm}(\mu_i,\sigma^2)$, and
-under standard independence assumption, the
+under the standard independence assumption, the
 joint density is the product of the $n$ densities:
-$$L(y_i;\beta_0,\beta_1,\sigma) = \prod_{i=1}^n
+$$L(\beta_0,\beta_1,\sigma|{\bf y}) = \prod_{i=1}^n
 p(y_i|\beta_0,\beta_1,\sigma)$$
+
 
 In practice, the likelihood is evaluated on the log scale to avoid
 computational problems that can result from multiplying small
 probabilities. The log-likelihood is just this:
-$$l(y_i;\beta_0,\beta_1,\sigma) = \sum_{i=1}^n
+$$l(\beta_0,\beta_1,\sigma|y_i) = \sum_{i=1}^n
 \log(p(y_i|\beta_0,\beta_1,\sigma))$$
 
 
@@ -66,14 +67,78 @@ lm.like <- function(pars,y,x) {
     return(-sum(dnorm(y, mu, sigma, log=TRUE)))
 }
 ```
+
 Plugging in values for the parameters will return the negative
 log-likelihood for a particular dataset. The goal of classical
 inference is to find the parameters that maximize the
-likelihood. Bayesian inference is also based on the likelihood, but
-the goal is to characterize the posterior distribution of the
-parameters, given the data and a user specified prior distribution.
+likelihood. It's easiest to let computers do the work, and __R__ has
+many functions for the task, including `optim` and `nlm`.
+
 
 ## Bayesian approach
+
+Bayesian inference is also based on the likelihood, but
+the goal is to characterize the posterior distribution of the
+parameters, given the data and a user specified prior
+distribution. The posterior distribution describes our uncertainty
+about the parameters.
+
+The posterior distribution of the linear model parameters is:
+$$p(\beta_0,\beta_1,\sigma|{\bf y}) \propto \left\{\prod_{i=1}^n
+p(y_i|\beta_0,\beta_1,\sigma)\right\}p(\beta_0,\beta_1,\sigma)$$
+where the first term on the right-hand side of the equation should
+look familiar because it is the likelihood discussed above. The second
+term is the prior distribution of the parameters. 
+
+Normally, the prior
+distributions are taken to be independent of one another, and if
+little prior information is available, diffuse Gaussian or uniform
+distributions are often used to characterize the lack of
+knowledge. The prior distributions will have little effect on
+the posterior distribution if data are informative about the
+parameters of interest. However, it's always important to assess the
+influence of the prior.
+
+The computation challenge facing Bayesians is that it is rarely
+possible to compute the posterior distribution directly because it is
+a multivarite distribution with an intractible normalizing
+constant. This seemly enormous problem can be resolved using Markov
+chain Monte Carlo methods, among others. Gibbs sampling is the most
+general MCMC technique, and it involves sequentially sampling each
+parameter from its full conditional distribution -- the probability
+distribution of the parameter of interest, conditional on all the
+other paramters in the model. It's amazing that this works, but it
+does. See elsewhere for proofs. For a linear model, a Gibbs sampler
+would involve repeating the following steps several thousand times:
+
+***
+#### Step 1: Sample $\beta_0$ from its full conditional distribution:
+
+$$p(\beta_0|\beta_1,\sigma) \propto \left\{\prod_{i=1}^n p(y_i|\beta_0,\beta_1,\sigma)\right\}p(\beta_0)$$
+
+
+#### Step 2: Sample $\beta_1$ from its full conditional distribution:
+
+$$p(\beta_1|\beta_0,\sigma) \propto \left\{\prod_{i=1}^n p(y_i|\beta_0,\beta_1,\sigma)\right\}p(\beta_1)$$
+
+#### Step 3: Sample $\sigma$ from its full conditional distribution:
+
+$$p(\sigma|\beta_0,\beta_1) \propto \left\{\prod_{i=1}^n
+p(y_i|\beta_0,\beta_1,\sigma)\right\}p(\sigma)$$
+
+***
+
+So, what do the full conditional distributions looks like? In this
+case, if conjugate prior distributions are used, the full conditional
+distributions are Gaussian for the $\beta$'s and gamma for
+$\sigma$. A great cheat sheet can be
+found
+[here](https://en.wikipedia.org/wiki/Conjugate_prior#Table_of_conjugate_distributions). 
+However, we often don't want to restrict ourselves to conjugate priors,
+in which case we can use a Metropolis-Hastings algorithm to indirectly
+sample from each full conditional distribution. These details are
+demonstrated in the following example.
+
 
 
 
