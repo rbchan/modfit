@@ -111,15 +111,15 @@ following steps several thousand times:
 #### Step 1: Sample $\beta_0$ from its full conditional distribution:
 
 $$
-p(\beta_0|\beta_1,\sigma) \propto \left\{ \prod_{i=1}^n
-p(y_i|\beta_0,\beta_1,\sigma) \right\} p(\beta_0)
+p(\beta_0|\beta_1,\sigma) \propto \left\\{ \prod_{i=1}^n
+p(y_i|\beta_0,\beta_1,\sigma) \right\\} p(\beta_0)
 $$
 
 #### Step 2: Sample $\beta_1$ from its full conditional distribution:
 
 $$p
-(\beta_1|\beta_0,\sigma) \propto \lbrace \prod_{i=1}^n
-p(y_i|\beta_0,\beta_1,\sigma)\rbrace p(\beta_1)
+(\beta_1|\beta_0,\sigma) \propto \left\lbrace \prod_{i=1}^n
+p(y_i|\beta_0,\beta_1,\sigma)\left\rbrace p(\beta_1)
 $$
 
 #### Step 3: Sample $\sigma$ from its full conditional distribution:
