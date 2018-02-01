@@ -150,8 +150,7 @@ accept this candidate value with probability  $\min(1,R)$ where $R$ is
 the MH acceptance ratio: 
 
 $$
-  R = \frac{\left\lbrace \prod_{i=1}^{n} p(y_i|\beta_{0}^{\star},\beta_1,\sigma^2)\right\rbrace p(\beta_0^{*})p(\beta_0|\beta_0^{*})}{\left\lbrace \prod_{i=1}^n
-  p(y_i|\beta_0,\beta_1,\sigma^2)\right\rbrace p(\beta_0)p(\beta_{0}^{*}|\beta_0)}
+R = \frac{\left\lbrace \prod_{i=1}^n p(y_i|\beta_{0}^*,\beta_1,\sigma^2)\right\rbrace p(\beta_0^{*})p(\beta_0|\beta_0^{*})}{\left\lbrace \prod_{i=1}^n p(y_i|\beta_0,\beta_1,\sigma^2)\right\rbrace p(\beta_0)p(\beta_{0}^{*}|\beta_0)}
 $$
 
 Notice that the numerator and the denominator are made up of the

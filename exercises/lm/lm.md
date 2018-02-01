@@ -143,8 +143,7 @@ accept this candidate value with probability $\min(1,R)$ where $R$ is
 the MH acceptance ratio:
 
 $$
-  R = \frac{\left\lbrace \prod_{i=1}^{n} p(y_i|\beta_{0}^{\star},\beta_1,\sigma^2)\right\rbrace p(\beta_0^{*})p(\beta_0|\beta_0^{*})}{\left\lbrace \prod_{i=1}^n
-  p(y_i|\beta_0,\beta_1,\sigma^2)\right\rbrace p(\beta_0)p(\beta_{0}^{*}|\beta_0)}
+R = \frac{\left\lbrace \prod_{i=1}^n p(y_i|\beta_{0}^*,\beta_1,\sigma^2)\right\rbrace p(\beta_0^{*})p(\beta_0|\beta_0^{*})}{\left\lbrace \prod_{i=1}^n p(y_i|\beta_0,\beta_1,\sigma^2)\right\rbrace p(\beta_0)p(\beta_{0}^{*}|\beta_0)}
 $$
 
 Notice that the numerator and the denominator are made up of the product
@@ -602,16 +601,16 @@ summary(jc)
     ##    plus standard error of the mean:
     ## 
     ##          Mean     SD Naive SE Time-series SE
-    ## beta0 -0.8802 0.2201 0.001798       0.001798
-    ## beta1  0.8193 0.2153 0.001758       0.002215
-    ## sigma  2.1825 0.1604 0.001310       0.001796
+    ## beta0 -0.8801 0.2175 0.001776       0.001776
+    ## beta1  0.8197 0.2137 0.001745       0.002233
+    ## sigma  2.1854 0.1615 0.001319       0.001817
     ## 
     ## 2. Quantiles for each variable:
     ## 
-    ##          2.5%    25%     50%     75%   97.5%
-    ## beta0 -1.3168 -1.026 -0.8798 -0.7321 -0.4479
-    ## beta1  0.4044  0.675  0.8195  0.9620  1.2413
-    ## sigma  1.8988  2.068  2.1748  2.2859  2.5190
+    ##          2.5%     25%     50%     75%   97.5%
+    ## beta0 -1.3035 -1.0257 -0.8818 -0.7332 -0.4552
+    ## beta1  0.3985  0.6778  0.8198  0.9634  1.2378
+    ## sigma  1.8964  2.0745  2.1758  2.2850  2.5286
 
 Continue sampling where we left off.
 
