@@ -15,8 +15,8 @@ $$y_i \sim \mathrm{Norm}(\mu_i,\sigma^2) \qquad \mathrm{for} \quad i=1,\dots,n $
 where $\mu_i = \beta_0 + \beta_1 x_i$ and $x_i$ is a continuous covariate.
 
 Here's another:
-$$y_i = \beta_0 + \beta_1 x_i + \epsilon_i$$
-where $\epsilon_i \sim \mathrm{Norm}(0, \sigma^2)$.
+$$y_i = \beta_0 + \beta_1 x_i + \varepsilon_i$$
+where $\varepsilon_i \sim \mathrm{Norm}(0, \sigma^2)$.
 
 A third option is to use matrix notation: 
 $${\bf y} = {\bf X}{\boldsymbol \beta} + {\boldsymbol \varepsilon}$$
@@ -56,7 +56,7 @@ $$l(\beta_0,\beta_1,\sigma|y_i) = \sum_{i=1}^n
 \log(p(y_i|\beta_0,\beta_1,\sigma))$$
 
 
-In __R__, most of the optimizers want the negative log-likelihood,
+In `R`, most of the optimizers want the negative log-likelihood,
 which we can write like this:
 ```{R}
 lm.like <- function(pars,y,x) {
@@ -71,7 +71,7 @@ lm.like <- function(pars,y,x) {
 Plugging in values for the parameters will return the negative
 log-likelihood for a particular dataset. The goal of classical
 inference is to find the parameters that maximize the
-likelihood. It's easiest to let computers do the work, and __R__ has
+likelihood. It's easiest to let computers do the work, and `R` has
 many functions for the task, including `optim` and `nlm`.
 
 
@@ -101,17 +101,16 @@ the posterior distribution if data are informative about the
 parameters of interest. However, it's always important to assess the
 influence of the prior.
 
-The computation challenge facing Bayesians is that it is rarely
+The computational challenge facing Bayesians is that it is rarely
 possible to compute the posterior distribution directly because it is
 a multivarite distribution with an intractible normalizing
 constant. This seemly enormous problem can be resolved using Markov
-chain Monte Carlo methods, among others. Gibbs sampling is the most
+chain Monte Carlo methods. Gibbs sampling is the most
 general MCMC technique, and it involves sequentially sampling each
 parameter from its full conditional distribution -- the probability
-distribution of the parameter of interest, conditional on all the
-other paramters in the model. It's amazing that this works, but it
-does. See elsewhere for proofs. For a linear model, a Gibbs sampler
-would involve repeating the following steps several thousand times:
+distribution of the parameter of interest, conditional on the data and
+all the other paramters in the model. For a linear model, a Gibbs
+sampler would involve repeating the following steps several thousand times:
 
 ***
 #### Step 1: Sample $\beta_0$ from its full conditional distribution:
@@ -145,13 +144,42 @@ found
 [here](https://en.wikipedia.org/wiki/Conjugate_prior#Table_of_conjugate_distributions). 
 However, we often don't want to restrict ourselves to conjugate priors,
 in which case we can use a Metropolis-Hastings algorithm to indirectly
-sample from each full conditional distribution. These details are
-demonstrated in the following example.
+sample from each full conditional distribution. For example, we can
+propose $\beta_{0}^{*} \sim \mathrm{Norm}(\beta_0, \mathrm{tune}_1)$ and
+accept this candidate value with probability  $\min(1,R)$ where $R$ is
+the MH acceptance ratio: 
+
+$$
+  R = \frac{\left\lbrace\prod_{i=1}^n
+  p(y_i|\beta_0^{*},\beta_1,\sigma^2)\right\rbrace
+  p(\beta_0^{*})p(\beta_0|\beta_0^{*})}{\left\lbrace \prod_{i=1}^n
+  p(y_i|\beta_0,\beta_1,\sigma^2)\right\rbrace p(\beta_0)p(\beta_0^{*}|\beta_0)}
+$$
+
+Notice that the numerator and the denominator are made up of the
+product of the likelihood, the prior, and the proposal
+distributions. The likelihood and prior in the numerator are
+associated with the the candidate value. The proposal distribution in
+the numerator is the probability density associated with transitioning
+from $\beta_0^{*}$ back to $\beta_0$. The denominator has the
+likelihood and prior of the current values, along with the probability
+density associated with moving to the candidate from the current value
+of $\beta_0$. If a symmetric proposal distribution is used, the thrid
+terms in the numerator and denominator cancel out and do not need to
+be computed.
+
+
+
 
 
 
 
 # Example
+
+Here we demonstrate how to fit a simple linear model using both
+classical and Bayesian methods. 
+
+
 
 ## Simulate a dataset
 
@@ -177,6 +205,269 @@ Take a look:
 cbind(x,y)[1:4,] # First 4 observations
 plot(x,y)
 ```
+
+
+### Classical analysis
+
+
+
+
+### Bayesian analysis
+
+
+#### A Gibbs sampler in `R`
+
+```{R}
+lm.gibbs <- function(y, x, niter=10000, start, tune) {
+samples <- matrix(NA, niter, 3)
+colnames(samples) <- c("beta0", "beta1", "sigma")
+beta0 <- start[1]; beta1 <- start[2]; sigma <- start[3]
+
+for(iter in 1:niter) {
+    ## Sample from p(beta0|dot)
+    mu <- beta0 + beta1*x
+    ll.y <- sum(dnorm(y, mu, sigma, log=TRUE))
+    prior.beta0 <- dnorm(beta0, 0, 1000, log=TRUE)
+    beta0.cand <- rnorm(1, beta0, tune[1])
+    mu.cand <- beta0.cand + beta1*x
+    ll.y.cand <- sum(dnorm(y, mu.cand, sigma, log=TRUE))
+    prior.beta0.cand <- dnorm(beta0.cand, 0, 1000, log=TRUE)
+    mhr <- exp((ll.y.cand+prior.beta0.cand) - (ll.y+prior.beta0))
+    if(runif(1) < mhr) {
+        beta0 <- beta0.cand
+    }
+
+    ## Sample from p(beta1|dot)
+    mu <- beta0 + beta1*x
+    ll.y <- sum(dnorm(y, mu, sigma, log=TRUE))
+    prior.beta1 <- dnorm(beta1, 0, 1000, log=TRUE)
+    beta1.cand <- rnorm(1, beta1, tune[2])
+    mu.cand <- beta0 + beta1.cand*x
+    ll.y.cand <- sum(dnorm(y, mu.cand, sigma, log=TRUE))
+    prior.beta1.cand <- dnorm(beta1.cand, 0, 1000, log=TRUE)
+    mhr <- exp((ll.y.cand+prior.beta1.cand) - (ll.y+prior.beta1))
+    if(runif(1) < mhr) {
+        beta1 <- beta1.cand
+    }
+
+    ## Sample from p(sigma|dot)
+    ll.y <- sum(dnorm(y, mu, sigma, log=TRUE))
+    prior.sigma <- dunif(sigma, 0, 1000, log=TRUE)
+    sigma.cand <- rlnorm(1, log(sigma), tune[3])
+    mu <- beta0 + beta1*x
+    ll.y <- sum(dnorm(y, mu, sigma, log=TRUE))
+    prior.sigma <- dunif(sigma, 0, 1000, log=TRUE)
+    prop.sigma <- dlnorm(sigma, log(sigma.cand), tune[3], log=TRUE)
+    ll.y.cand <- sum(dnorm(y, mu, sigma.cand, log=TRUE))
+    prior.sigma.cand <- dunif(sigma.cand, 0, 1000, log=TRUE)
+    prop.sigma.cand <- dlnorm(sigma.cand, log(sigma), tune[3], log=TRUE)
+    mhr <- exp((ll.y.cand+prior.sigma.cand+prop.sigma) -
+               (ll.y+prior.sigma+prop.sigma.cand))
+    if(runif(1) < mhr) {
+        sigma <- sigma.cand
+    }
+    samples[iter,] <- c(beta0, beta1, sigma)
+}
+return(samples)
+}
+```
+
+
+
+
+The function `lm.gibbs` is fairly long and dense. Take a look at
+the script `stats/keys/lm-key-old.R` to see an annotated function
+along with several other functions for making the algorithm much
+faster. These examples include the use of `Rcpp` and `RcppArmadillo`.
+
+
+
+Here's how to run the function:
+
+```{R}
+out1 <- lm.gibbs(y=y, x=x, niter=1000,
+                start=c(0,0,1),
+                tune=c(0.4, 0.4, 0.2))
+```
+
+
+The `coda` package makes it easy to look at the results:
+
+```{R}
+library(coda)
+mc1 <- mcmc(out1)
+summary(mc1)
+```
+
+
+
+
+
+
+There are many things to take note of. The `Mean` is the
+posterior mean. The `SD` is the posterior standard deviation,
+which will be similar to the SE you would get from a classical
+analysis. The `Naive SE` and `Time-series SE` tell you about
+the Monte Carlo error associated with the posterior means. In Bayesian
+inference, point estimates aren't the main object of
+inference. Instead, you want the entire posterior distribution, and
+the quantiles are helpful for summarizing the distributions. You can
+also view the posteriors (along with the trace plots) using the
+`plot` method in the `coda` package.
+
+
+
+
+
+
+```{R}
+plot(mc1)
+```
+
+You can see that there is a short burn-in period that should be
+discarded. You can do that, and optionally thin the chain, using the
+`window` method:
+```{R}
+mc1b <- window(mc1, start=101, thin=1)
+```
+
+Other things you can do in the `coda` package include assessing
+convergence and looking at the rejection rate.
+```{R}
+rejectionRate(mc1b)
+```
+These should be closer to 0.65 to increase our effective sample
+size (Although, it doesn't really matter in this case because
+  the Monte Carlo error rate is already very low). Let's rerun the
+sampler with new tuning values and this time using 2 chains run in parallel:
+```{R}
+library(parallel)
+nCores <- 2
+cl <- makeCluster(nCores)
+clusterExport(cl, c("lm.gibbs", "y", "x"))
+clusterSetRNGStream(cl, 3479)
+out <- clusterEvalQ(cl, {
+    mc <- lm.gibbs(y=y, x=x, niter=1000,
+                   start=c(0,0,1), tune=c(0.7,0.7,0.3))
+    return(mc)
+})
+mcp <- as.mcmc.list(lapply(out, function(x) mcmc(x)))
+```
+
+
+```{R}
+plot(mcp)
+```
+
+Looking at the chains is the best way to assess convergence, but you
+can look at diagnostics too:
+```{R}
+gelman.diag(mcp) # Point ests. should be <1.1 or so
+```
+
+Close the connections
+```{R}
+stopCluster(cl)
+```
+
+
+
+
+
+
+
+## Using __JAGS__
+
+
+The first thing to do is create a text file with the model
+description. Mine is called `lm-JAGS.jag`, and it looks like
+this:
+
+
+
+    model {
+    
+    # Priors
+    beta0 ~ dnorm(0, 0.0001)
+    beta1 ~ dunif(-100, 100)
+    sigmaSq ~ dunif(0, 1000)
+    sigma <- sqrt(sigmaSq)
+    tau <- 1/sigmaSq  # dnorm wants precision instead of variance
+    
+    for(i in 1:n) {
+      mu[i] <- beta0 + beta1*x[i]
+      y[i] ~ dnorm(mu[i], tau)
+    }
+    
+    
+    }
+
+
+Now, we need to put the data in a named list.
+```{R}
+jd <- list(y=y, x=x, n=n)
+str(jd)
+```
+
+Pick the parameters to monitor
+```{R}
+jp <- c("beta0", "beta1", "sigma")
+```
+
+Create a function to generate random initial values
+```{R}
+ji <- function() {
+    list(beta0=rnorm(1), beta1=rnorm(1), sigmaSq=runif(1))
+}
+ji()
+```
+
+
+Compile the model with 3 chains and adapt.
+```{R,jm,results='hide'}
+library(rjags)
+jm <- jags.model("lm-JAGS.jag", data=jd, inits=ji, n.chains=3,
+                 n.adapt=1000)
+```
+
+Draw 5000 posterior samples for each chain
+```{R,jc,results='hide'}
+jc <- coda.samples(jm, jp, n.iter=5000)
+```
+
+Take a look
+```{R}
+summary(jc)
+```
+
+
+Continue sampling where we left off.
+```{R,jc2,results='hide'}
+jc2 <- coda.samples(jm, jp, n.iter=1000)
+```
+
+Visualize
+```{R,jc2-plot}
+plot(jc2)
+```
+
+
+
+# Discussion
+
+
+The keys to other exercises either won't be made publically available,
+or they won't include so much explanation.
+
+
+
+
+
+
+
+
+
+
 
 
 
