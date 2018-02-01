@@ -150,10 +150,8 @@ accept this candidate value with probability  $\min(1,R)$ where $R$ is
 the MH acceptance ratio: 
 
 $$
-  R = \frac{\left\lbrace\prod_{i=1}^n
-  p(y_i|\beta_0^{*},\beta_1,\sigma^2)\right\rbrace
-  p(\beta_0^{*})p(\beta_0|\beta_0^{*})}{\left\lbrace \prod_{i=1}^n
-  p(y_i|\beta_0,\beta_1,\sigma^2)\right\rbrace p(\beta_0)p(\beta_0^{*}|\beta_0)}
+  R = \frac{\left\lbrace \prod_{i=1}^{n} p(y_i|\beta_{0}^{\star},\beta_1,\sigma^2)\right\rbrace p(\beta_0^{*})p(\beta_0|\beta_0^{*})}{\left\lbrace \prod_{i=1}^n
+  p(y_i|\beta_0,\beta_1,\sigma^2)\right\rbrace p(\beta_0)p(\beta_{0}^{*}|\beta_0)}
 $$
 
 Notice that the numerator and the denominator are made up of the
@@ -311,8 +309,8 @@ for(iter in 1:niter) {
     mu.cand <- beta0.cand + beta1*x
     ll.y.cand <- sum(dnorm(y, mu.cand, sigma, log=TRUE))
     prior.beta0.cand <- dnorm(beta0.cand, 0, 1000, log=TRUE)
-    mhr <- exp((ll.y.cand+prior.beta0.cand) - (ll.y+prior.beta0))
-    if(runif(1) < mhr) {
+    R <- exp((ll.y.cand+prior.beta0.cand) - (ll.y+prior.beta0)) #MHR
+    if(runif(1) < R) {
         beta0 <- beta0.cand
     }
 
@@ -324,8 +322,8 @@ for(iter in 1:niter) {
     mu.cand <- beta0 + beta1.cand*x
     ll.y.cand <- sum(dnorm(y, mu.cand, sigma, log=TRUE))
     prior.beta1.cand <- dnorm(beta1.cand, 0, 1000, log=TRUE)
-    mhr <- exp((ll.y.cand+prior.beta1.cand) - (ll.y+prior.beta1))
-    if(runif(1) < mhr) {
+    R <- exp((ll.y.cand+prior.beta1.cand) - (ll.y+prior.beta1))
+    if(runif(1) < R) {
         beta1 <- beta1.cand
     }
 
@@ -340,9 +338,9 @@ for(iter in 1:niter) {
     ll.y.cand <- sum(dnorm(y, mu, sigma.cand, log=TRUE))
     prior.sigma.cand <- dunif(sigma.cand, 0, 1000, log=TRUE)
     prop.sigma.cand <- dlnorm(sigma.cand, log(sigma), tune[3], log=TRUE)
-    mhr <- exp((ll.y.cand+prior.sigma.cand+prop.sigma) -
+    R <- exp((ll.y.cand+prior.sigma.cand+prop.sigma) -
                (ll.y+prior.sigma+prop.sigma.cand))
-    if(runif(1) < mhr) {
+    if(runif(1) < R) {
         sigma <- sigma.cand
     }
     samples[iter,] <- c(beta0, beta1, sigma)

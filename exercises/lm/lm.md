@@ -143,10 +143,8 @@ accept this candidate value with probability $\min(1,R)$ where $R$ is
 the MH acceptance ratio:
 
 $$
-  R = \frac{\left\lbrace\prod_{i=1}^n
-  p(y_i|\beta_0^{*},\beta_1,\sigma^2)\right\rbrace
-  p(\beta_0^{*})p(\beta_0|\beta_0^{*})}{\left\lbrace \prod_{i=1}^n
-  p(y_i|\beta_0,\beta_1,\sigma^2)\right\rbrace p(\beta_0)p(\beta_0^{*}|\beta_0)}
+  R = \frac{\left\lbrace \prod_{i=1}^{n} p(y_i|\beta_{0}^{\star},\beta_1,\sigma^2)\right\rbrace p(\beta_0^{*})p(\beta_0|\beta_0^{*})}{\left\lbrace \prod_{i=1}^n
+  p(y_i|\beta_0,\beta_1,\sigma^2)\right\rbrace p(\beta_0)p(\beta_{0}^{*}|\beta_0)}
 $$
 
 Notice that the numerator and the denominator are made up of the product
@@ -350,8 +348,8 @@ for(iter in 1:niter) {
     mu.cand <- beta0.cand + beta1*x
     ll.y.cand <- sum(dnorm(y, mu.cand, sigma, log=TRUE))
     prior.beta0.cand <- dnorm(beta0.cand, 0, 1000, log=TRUE)
-    mhr <- exp((ll.y.cand+prior.beta0.cand) - (ll.y+prior.beta0))
-    if(runif(1) < mhr) {
+    R <- exp((ll.y.cand+prior.beta0.cand) - (ll.y+prior.beta0)) #MHR
+    if(runif(1) < R) {
         beta0 <- beta0.cand
     }
 
@@ -363,8 +361,8 @@ for(iter in 1:niter) {
     mu.cand <- beta0 + beta1.cand*x
     ll.y.cand <- sum(dnorm(y, mu.cand, sigma, log=TRUE))
     prior.beta1.cand <- dnorm(beta1.cand, 0, 1000, log=TRUE)
-    mhr <- exp((ll.y.cand+prior.beta1.cand) - (ll.y+prior.beta1))
-    if(runif(1) < mhr) {
+    R <- exp((ll.y.cand+prior.beta1.cand) - (ll.y+prior.beta1))
+    if(runif(1) < R) {
         beta1 <- beta1.cand
     }
 
@@ -379,9 +377,9 @@ for(iter in 1:niter) {
     ll.y.cand <- sum(dnorm(y, mu, sigma.cand, log=TRUE))
     prior.sigma.cand <- dunif(sigma.cand, 0, 1000, log=TRUE)
     prop.sigma.cand <- dlnorm(sigma.cand, log(sigma), tune[3], log=TRUE)
-    mhr <- exp((ll.y.cand+prior.sigma.cand+prop.sigma) -
+    R <- exp((ll.y.cand+prior.sigma.cand+prop.sigma) -
                (ll.y+prior.sigma+prop.sigma.cand))
-    if(runif(1) < mhr) {
+    if(runif(1) < R) {
         sigma <- sigma.cand
     }
     samples[iter,] <- c(beta0, beta1, sigma)
@@ -604,16 +602,16 @@ summary(jc)
     ##    plus standard error of the mean:
     ## 
     ##          Mean     SD Naive SE Time-series SE
-    ## beta0 -0.8777 0.2190 0.001789       0.001789
-    ## beta1  0.8188 0.2165 0.001768       0.002259
-    ## sigma  2.1855 0.1604 0.001309       0.001853
+    ## beta0 -0.8802 0.2201 0.001798       0.001798
+    ## beta1  0.8193 0.2153 0.001758       0.002215
+    ## sigma  2.1825 0.1604 0.001310       0.001796
     ## 
     ## 2. Quantiles for each variable:
     ## 
-    ##          2.5%     25%     50%     75%   97.5%
-    ## beta0 -1.3122 -1.0255 -0.8770 -0.7301 -0.4472
-    ## beta1  0.3824  0.6766  0.8185  0.9643  1.2382
-    ## sigma  1.9052  2.0736  2.1757  2.2839  2.5305
+    ##          2.5%    25%     50%     75%   97.5%
+    ## beta0 -1.3168 -1.026 -0.8798 -0.7321 -0.4479
+    ## beta1  0.4044  0.675  0.8195  0.9620  1.2413
+    ## sigma  1.8988  2.068  2.1748  2.2859  2.5190
 
 Continue sampling where we left off.
 
