@@ -79,12 +79,12 @@ characterize the posterior distribution of the parameters, given the
 data and a user specified prior distribution. The posterior distribution
 describes our uncertainty about the parameters.
 
-The posterior distribution of the linear model parameters is:
-$$p(\beta_0,\beta_1,\sigma|{\bf y}) \propto \{\prod_{i=1}^n
-p(y_i|\beta_0,\beta_1,\sigma)\}p(\beta_0,\beta_1,\sigma)$$ where the
-first term on the right-hand side of the equation should look familiar
-because it is the likelihood discussed above. The second term is the
-prior distribution of the parameters.
+The posterior distribution of the linear model parameters is: $$
+p(\beta_0,\beta_1,\sigma|{\bf y}) \propto \left\lbrace \prod_{i=1}^n
+p(y_i|\beta_0,\beta_1,\sigma)\right\rbrace p(\beta_0,\beta_1,\sigma)
+$$ where the first term on the right-hand side of the equation should
+look familiar because it is the likelihood discussed above. The second
+term is the prior distribution of the parameters.
 
 Normally, the prior distributions are taken to be independent of one
 another, and if little prior information is available, diffuse Gaussian
@@ -111,22 +111,22 @@ following steps several thousand times:
 #### Step 1: Sample $\beta_0$ from its full conditional distribution:
 
 $$
-p(\beta_0|\beta_1,\sigma) \propto \left\\{ \prod_{i=1}^n
-p(y_i|\beta_0,\beta_1,\sigma) \right\\} p(\beta_0)
+p(\beta_0|\beta_1,\sigma) \propto \left\lbrace \prod_{i=1}^n
+p(y_i|\beta_0,\beta_1,\sigma) \right\rbrace p(\beta_0)
 $$
 
 #### Step 2: Sample $\beta_1$ from its full conditional distribution:
 
 $$p
 (\beta_1|\beta_0,\sigma) \propto \left\lbrace \prod_{i=1}^n
-p(y_i|\beta_0,\beta_1,\sigma)\left\rbrace p(\beta_1)
+p(y_i|\beta_0,\beta_1,\sigma)\right\rbrace p(\beta_1)
 $$
 
 #### Step 3: Sample $\sigma$ from its full conditional distribution:
 
 $$
-p(\sigma|\beta_0,\beta_1) \propto \left( \prod_{i=1}^n
-p(y_i|\beta_0,\beta_1,\sigma)\right) p(\sigma)
+p(\sigma|\beta_0,\beta_1) \propto \left\lbrace \prod_{i=1}^n
+p(y_i|\beta_0,\beta_1,\sigma)\right\rbrace p(\sigma)
 $$
 
 ------------------------------------------------------------------------

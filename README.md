@@ -8,11 +8,11 @@ need help getting through the first few exercises before they are
 comfortable with the process of writing likelihood equations and joint
 posterior distributions.
 
-The recommended way **to view the exercises** is to compile the .tex files
-with pdflatex. However, there will also be a .md file that can be
-viewed directly in github. I recommend that you view the .md files in
-Chrome with the 'GitHub with MathJax' extension enabled so that you
-can read the equations. 
+The recommended way **to view the exercises** is to compile the .tex
+files with `pdflatex` or the .Rmd files with `rmarkdown`. However,
+there will also be a .md file that can be viewed directly in github. I
+recommend that you view the .md files in Chrome with the 'GitHub with
+MathJax' extension enabled so that you can read the equations. 
 
 Most keys will not be available. **To view the keys** that are
 available (eg, the lm key), you can create a PDF by running 'knitr' on
