@@ -145,12 +145,12 @@ found
 However, we often don't want to restrict ourselves to conjugate priors,
 in which case we can use a Metropolis-Hastings algorithm to indirectly
 sample from each full conditional distribution. For example, we can
-propose $\beta_{0}^{*} \sim \mathrm{Norm}(\beta_0, \mathrm{tune}_1)$ and
+propose $\beta_{0}^{(c)} \sim \mathrm{Norm}(\beta_0, \mathrm{tune}_1)$ and
 accept this candidate value with probability  $\min(1,R)$ where $R$ is
 the MH acceptance ratio: 
 
 $$
-R = \frac{\lbrace \prod_{i=1}^n p(y_i|\tilde{\beta}_0,\beta_1,\sigma^2)\rbrace p(\beta_0^.)p(\beta_0|\beta_0^.)}{\lbrace \prod_{i=1}^n p(y_i|\beta_0,\beta_1,\sigma^2)\rbrace p(\beta_0)p(\beta_0^.|\beta_0)}
+R = \frac{\lbrace \prod_{i=1}^n p(y_i|\beta_0^{(c)},\beta_1,\sigma^2)\rbrace p(\beta_0^{(c)})p(\beta_0|\beta_0^{(c)})}{\lbrace \prod_{i=1}^n p(y_i|\beta_0,\beta_1,\sigma^2)\rbrace p(\beta_0)p(\beta_0^{(c)}|\beta_0)}
 $$
 
 
@@ -159,7 +159,7 @@ product of the likelihood, the prior, and the proposal
 distributions. The likelihood and prior in the numerator are
 associated with the the candidate value. The proposal distribution in
 the numerator is the probability density associated with transitioning
-from $\beta_0^{*}$ back to $\beta_0$. The denominator has the
+from $\beta_0^{(c)}$ back to $\beta_0$. The denominator has the
 likelihood and prior of the current values, along with the probability
 density associated with moving to the candidate from the current value
 of $\beta_0$. If a symmetric proposal distribution is used, the thrid
