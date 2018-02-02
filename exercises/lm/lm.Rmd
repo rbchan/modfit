@@ -1,9 +1,10 @@
-Exercise I: Fitting a linear model using maximum likelihood and Gibbs sampling
-================
-Richard Chandler
-Warnell School of Forestry and Natural Resources
-University of Georgia
-<rchandler@warnell.uga.edu>
+---
+title: "Exercise I: Fitting a linear model using maximum likelihood and Gibbs sampling"
+author: "Richard Chandler, Warnell School of Forestry and Natural
+Resources, University of Georgia, <rchandler@warnell.uga.edu>"
+---
+
+
 
 
 # The model
@@ -18,7 +19,7 @@ Here's another:
 $$y_i = \beta_0 + \beta_1 x_i + \varepsilon_i$$
 where $\varepsilon_i \sim \mathrm{Norm}(0, \sigma^2)$.
 
-A third option is to use matrix notation: 
+A third option is to use matrix notation:
 $${\bf y} = {\bf X}{\boldsymbol \beta} + {\boldsymbol \varepsilon}$$
 where ${\bf y}$ is the response vector and $\bf X$ is the design
 matrix, a $n \times p$ matrix with the the first column being a vector
@@ -34,14 +35,14 @@ residuals.
 A linear regression can be fitted to the data using ordinary least
 squares (OLS), which is fast and convienient, but not generalizable to
 non-Gaussian problems. We will focus instead on maximum likelihood and
-MCMC for performing classical and Bayesian inference, respectively. 
+MCMC for performing classical and Bayesian inference, respectively.
 
 
 ## Classical, likelihood-based approach
 
 The likelihood is the joint probability density of the data viewed as
 a function of the parameters. In this case, the probability density
-for a single observation is 
+for a single observation is
 $p(y_i|\beta_0,\beta_1,\sigma)=\mathrm{Norm}(\mu_i,\sigma^2)$, and
 under the standard independence assumption, the
 joint density is the product of the $n$ densities:
@@ -55,24 +56,11 @@ probabilities. The log-likelihood is just this:
 $$l(\beta_0,\beta_1,\sigma|y_i) = \sum_{i=1}^n
 \log(p(y_i|\beta_0,\beta_1,\sigma))$$
 
-
-In `R`, most of the optimizers want the negative log-likelihood,
-which we can write like this:
-```{R}
-lm.like <- function(pars,y,x) {
-    beta0 <- pars[1]
-    beta1 <- pars[2]
-    sigma <- pars[3]
-    mu <- beta0 + beta1*x
-    return(-sum(dnorm(y, mu, sigma, log=TRUE)))
-}
-```
-
 Plugging in values for the parameters will return the negative
-log-likelihood for a particular dataset. The goal of classical
-inference is to find the parameters that maximize the
-likelihood. It's easiest to let computers do the work, and `R` has
-many functions for the task, including `optim` and `nlm`.
+log-likelihood for a particular dataset. Classical
+inference involves finding the parameters that maximize the
+likelihood. It's easiest to let computers do the work, and __R__ has
+many functions for the task.
 
 
 ## Bayesian approach
@@ -80,7 +68,7 @@ many functions for the task, including `optim` and `nlm`.
 Bayesian inference is also based on the likelihood, but
 the goal is to characterize the posterior distribution of the
 parameters, given the data and a user specified prior
-distribution. The posterior distribution describes our uncertainty
+distribution. The posterior distribution describes uncertainty
 about the parameters.
 
 The posterior distribution of the linear model parameters is:
@@ -90,7 +78,7 @@ p(y_i|\beta_0,\beta_1,\sigma)\right\rbrace p(\beta_0,\beta_1,\sigma)
 $$
 where the first term on the right-hand side of the equation should
 look familiar because it is the likelihood discussed above. The second
-term is the prior distribution of the parameters. 
+term is the prior distribution of the parameters.
 
 Normally, the prior
 distributions are taken to be independent of one another, and if
@@ -139,15 +127,14 @@ $$
 So, what do the full conditional distributions looks like? In this
 case, if conjugate prior distributions are used, the full conditional
 distributions are Gaussian for the $\beta$'s and gamma for
-$\sigma$. A great cheat sheet can be
-found
-[here](https://en.wikipedia.org/wiki/Conjugate_prior#Table_of_conjugate_distributions). 
+$\sigma$. A great cheat sheet can be found
+[here](https://en.wikipedia.org/wiki/Conjugate_prior#Table_of_conjugate_distributions).
 However, we often don't want to restrict ourselves to conjugate priors,
 in which case we can use a Metropolis-Hastings algorithm to indirectly
 sample from each full conditional distribution. For example, we can
 propose $\beta_{0}^{(c)} \sim \mathrm{Norm}(\beta_0, \mathrm{tune}_1)$ and
 accept this candidate value with probability  $\min(1,R)$ where $R$ is
-the MH acceptance ratio: 
+the MH acceptance ratio:
 
 $$
 R = \frac{\lbrace \prod_{i=1}^n p(y_i|\beta_0^{(c)},\beta_1,\sigma^2)\rbrace p(\beta_0^{(c)})p(\beta_0|\beta_0^{(c)})}{\lbrace \prod_{i=1}^n p(y_i|\beta_0,\beta_1,\sigma^2)\rbrace p(\beta_0)p(\beta_0^{(c)}|\beta_0)}
@@ -175,14 +162,17 @@ be computed.
 # Example
 
 Here we demonstrate how to fit a simple linear model using both
-classical and Bayesian methods. 
+classical and Bayesian methods.
 
 
 
 ## Simulate a dataset
 
 
-Here's some **R** code to simulate $x$ and $y$:
+The following **R** code simulates the response variable $y$, using
+some specified parameters and a randombly generated covariate $x$. We
+will use this dataset to demonstrate maximum likelihood and MCMC
+methods.
 
 ```{R}
 set.seed(348720) # To make this reproducible
@@ -208,10 +198,7 @@ plot(x,y)
 ## Classical analysis
 
 
-
-
-
-Here is an R function to compute the negative log-likelihood:
+Here is an R function to compute the negative log-likelihood.
 ```{R}
 nll <- function(pars) {
     beta0 <- pars[1]
@@ -248,7 +235,7 @@ nll(starts2)
 This is obviously a bad idea. Even with only three parameters, it
 would take forever to find the true maximum likelihood estimates
 (MLEs). Fortunately, there are many optimization functions in
-`R`. We'll use `optim`, but `nlm` or `nlminb`
+**R**. We'll use `optim`, but `nlm` or `nlminb`
 would work just as well.
 
 The `optim` function requires starting values and a likelihood
@@ -260,10 +247,12 @@ matrix.
 fm <- optim(starts, nll, hessian=TRUE)
 fm
 ```
+
 The `par` component has the MLEs. The `value` component is
 the negative log-likelihood at the MLEs. The `convergence` value
 should be 0. To obtain the SEs, we need to first invert the Hessian to
 get the variance-covariance matrix:
+
 
 ```{R}
 vcov <- solve(fm$hessian)
@@ -279,7 +268,7 @@ cbind(Est=mles, SE=SEs)
 
 to results from `lm`:
 ```{R}
-summary(lm(y~x))
+summary(fm1 <- lm(y~x))
 ```
 
 The results are very similar. The small differences are likely due to
@@ -287,12 +276,35 @@ the use of maximum likelihood instead of ordinary least-squares, which
 is used by `lm`.
 
 
+### Predictions
 
 
-### Bayesian analysis
+Predictions of the expected value of $y$ for new values of $x$ can be
+found by plugging the MLEs back into the linear model. Here is an easy
+way to get predictions and confidence intervals using the `predict`
+function.
 
 
-#### A Gibbs sampler in `R`
+```{R}
+xpred <- seq(min(x), max(x), length.out=50)
+ypredCI <- predict(fm1, newdata=data.frame(x=xpred), interval="confidence")
+plot(x,y)
+lines(xseq, ypredCI[,"fit"])
+lines(xseq, ypredCI[,"lwr"], lty=2)
+lines(xseq, ypredCI[,"upr"], lty=2)
+```
+
+If we repeated the study many times, the actual regression line (for
+the true values of $\beta_0$ and $\beta_1$ should lie within these
+confidence intervals 95 percent of the time.
+
+
+
+
+## Bayesian analysis
+
+
+### A Gibbs sampler in `R`
 
 ```{R}
 lm.gibbs <- function(y, x, niter=10000, start, tune) {
@@ -463,20 +475,19 @@ this:
 
 
     model {
-    
+
     # Priors
     beta0 ~ dnorm(0, 0.0001)
     beta1 ~ dunif(-100, 100)
     sigmaSq ~ dunif(0, 1000)
     sigma <- sqrt(sigmaSq)
     tau <- 1/sigmaSq  # dnorm wants precision instead of variance
-    
+
     for(i in 1:n) {
       mu[i] <- beta0 + beta1*x[i]
       y[i] ~ dnorm(mu[i], tau)
     }
-    
-    
+
     }
 
 
@@ -530,18 +541,23 @@ plot(jc2)
 
 
 
-# Discussion
+### Prediction
 
+Bayesian predictions are made using the posterior predictive
+distribution, which can be computed by applying the function of
+interest to each posterior sample.
 
-The keys to other exercises either won't be made publically available,
-or they won't include so much explanation.
-
-
-
-
-
-
-
+```{R}
+jc2mat <- as.matrix(window(jc2, thin=10))   ## Put MCMC samples in a matrix
+Ey <- matrix(NA, length(xpred), nrow(jc2mat))
+for(i in 1:nrow(jc2mat)) {
+  Ey[,i] <- jc2mat[i,"beta0"] + jc2mat[i,"beta1"]*xpred
+}
+plot(x,y)
+matlines(xpred, Ey, col=rgb(0,1,0,0.1))
+lines(xpred, apply(Ey, 1, quantile, prob=0.025), lty=2)
+lines(xpred, apply(Ey, 1, quantile, prob=0.975), lty=2)
+```
 
 
 
@@ -552,12 +568,13 @@ or they won't include so much explanation.
 # Assignment
 
 
-1. Simulate a dataset in **R** using $\beta_0=-1$, $\beta_1=1$,
-    $\sigma^2=4$. Let $n=100$ be the sample size, and generate a
-    single continuous covariate from a standard normal distribution.
-2. Write the equation for the likelihood in LaTeX.
+1. Simulate a dataset in **R** using two covariates with $\beta_0=-1$,
+    $\beta_1=1$, $\beta_2=0.5$, and $\sigma^2=4$. Let $n=100$ be the
+    sample size, and generate the two continuous covariate from
+    standard normal distributions.
+2. Write the equation for the likelihood in $\LaTeX$.
 3. Obtain the MLEs in **R** by minimizing the negative log-likelihood
-4. Write the joint posterior distribution in LaTeX
+4. Write the joint posterior distribution in $\LaTeX$
 5. Describe a Gibbs sampler for obtaining posterior samples
 6. Implement the Gibbs sampler in **R** using the dataset that
     you simulated earlier.
