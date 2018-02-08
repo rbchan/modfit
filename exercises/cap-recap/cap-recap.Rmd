@@ -1,0 +1,260 @@
+
+## Simulate non-spatial, closed population cap-recap data: M0
+
+
+Parameters
+
+```{r}
+N <- 30
+K <- 10  # nOccasions
+p <- 0.1 # capture prob on 1 occasion
+
+1 - (1-p)^K # capture prob after K occasions
+```
+
+
+All (observed and unobserved) capture histories
+
+```{r}
+yall <- matrix(NA, N, K)
+for(k in 1:K) {
+    yall[,k] <- rbinom(N, 1, p)
+}
+```
+
+
+Discard unobservable (all zero) capture histories
+
+```{r}
+y <- yall[rowSums(yall)>0,]
+y
+```
+
+
+
+Summary stats
+
+```{r}
+rowSums(y)
+table(rowSums(y))
+colSums(y)
+```
+
+
+
+# Bayesian analysis
+
+## Joint posterior
+
+$$
+p(z,\psi,p|y) \propto p(y|z,p)p(z|\psi)p(\psi)p(p)
+$$
+
+
+
+## Gibbs sampler in R
+
+```{r}
+
+M0.gibbs <- function(y, M, niter, tune) {
+
+    n0 <- nrow(y)
+    K <- ncol(y)
+    yaug <- matrix(0L, M, K)
+    yaug[1:n0,] <- y
+    captured <- rowSums(yaug, na.rm=TRUE)>0
+
+    ## Initial values
+    z <- rep(1, M)
+    psi <- runif(1)
+    p <- runif(1)
+
+    ## Initial densities
+    ## Avoiding for loop with R's recycling rules
+    lp.y <- dbinom(yaug, 1, z*p, log=TRUE)
+    lp.z <- dbinom(z, 1, psi, log=TRUE)
+    lp.psi <- dbeta(psi, 1, 1, log=TRUE)
+    lp.p <- dbeta(p, 1, 1, log=TRUE)
+
+    out <- matrix(NA, niter, 4)
+    colnames(out) <- c("N", "psi", "p", "deviance")
+
+    for(iter in 1:niter) {
+        ## Sample from p(z|dot)
+        for(i in 1:M) {
+            if(captured[i])
+                next
+            z.cand <- 1-z[i]
+            lp.z.cand <- dbinom(z.cand, 1, psi, log=TRUE)
+            lp.y.cand <- dbinom(yaug[i,], 1, z.cand*p, log=TRUE)
+            if(runif(1) < exp((lp.z.cand+sum(lp.y.cand)) -
+                              (lp.z[i]+sum(lp.y[i,])))) {
+                z[i] <- z.cand
+                lp.y[i,] <- lp.y.cand
+                lp.z[i] <- lp.z.cand
+            }
+        }
+
+        ## Sample from p(psi|dot)
+        ## psi.cand <- rnorm(1, psi, tune[1])
+        ## if(psi.cand>0 & psi.cand<1) {
+        ##     lp.z.cand <- dbinom(z, 1, psi.cand, log=TRUE)
+        ##     lp.psi.cand <- dbeta(psi.cand, 1, 1, log=TRUE)
+        ##     if(runif(1) < exp((sum(lp.z.cand)+lp.psi.cand)-
+        ##                       (sum(lp.z)+lp.psi))) {
+        ##         psi <- psi.cand
+        ##         lp.z <- lp.z.cand
+        ##         lp.psi <- lp.psi.cand
+        ##     }
+        ## }
+        psi <- rbeta(1, 1+sum(z), 1+M-sum(z))
+
+        ## Sample from p(p|dot)
+        p.cand <- rnorm(1, p, tune[2])
+        if(p.cand>0 & p.cand<1) {
+            lp.y.cand <- dbinom(yaug, 1, z*p.cand, log = TRUE)
+            lp.p.cand <- dbeta(p.cand, 1, 1, log = TRUE)
+            if(runif(1) < exp((sum(lp.y.cand)+lp.p.cand)-
+                              (sum(lp.y)+lp.p))) {
+                p <- p.cand
+                lp.y <- lp.y.cand
+                lp.p <- lp.p.cand
+            }
+        }
+
+        N <- sum(z)
+        deviance <- -2*sum(lp.y)
+
+        out[iter,] <- c(N, psi, p, deviance)
+    
+    }
+    return(out)
+}
+
+```
+
+
+
+```{r}
+
+debugonce(M0.gibbs)
+
+fmM0.1 <- M0.gibbs(y=y, M=100, niter=1000, tune=c(0.15,0.05))
+
+library(coda)
+mcM0.1 <- as.mcmc(fmM0.1)
+plot(mcM0.1)
+
+rejectionRate(mcM0.1)
+
+
+```
+
+
+
+
+
+
+
+
+
+## JAGS
+
+
+Augment the data
+
+```{r}
+M <- 100
+yAug <- matrix(0, M, K)
+yAug[1:nrow(y),] <- y
+##yAug
+```
+
+library(rjags)
+
+## Model M0
+jd <- list(yAug=yAug, K=K, M=M)
+
+ji <- function() list(p=runif(1), psi=runif(1),
+                      z=rep(1, M))
+
+jp <- c("p", "psi", "N", "deviance")
+
+load.module("dic")
+
+jm <- jags.model(file="M0.jag", data=jd, inits=ji)
+
+jp <- coda.samples(jm, jp, n.iter=1000)
+
+
+plot(jp)
+
+summary(jp)
+
+
+
+
+
+
+## Model Mt
+jd <- list(yAug=yAug, K=K, M=M)
+
+ji.Mt <- function() list(p=runif(jd$K), psi=runif(1),
+                      z=rep(1, M))
+ji.Mt()
+
+jp <- c("p", "psi", "N", "deviance")
+
+
+jm.Mt <- jags.model(file="Mt.jag", data=jd, inits=ji.Mt)
+
+jp.Mt <- coda.samples(jm.Mt, jp, n.iter=1000)
+
+
+plot(jp.Mt, ask=TRUE)
+
+(sp.Mt <- summary(jp.Mt))
+
+plot(1:10, sp.Mt$quantile[2:11,3], ylim=c(0,1))
+segments(1:10, sp.Mt$quantile[2:11,1], 1:10, sp.Mt$quantile[2:11,5])
+
+
+
+
+
+
+
+
+
+## Model Mb
+
+firstcap <- apply(y, 1, function(x) min(which(x==1)))
+firstcap
+
+prevcap <- matrix(1, M, ncol(y))
+for(i in 1:nrow(y)) {
+    prevcap[i, (firstcap[i]+1):ncol(y)] <- 2
+}
+
+prevcap
+
+jd.Mb <- list(yAug=yAug, K=K, M=M, prevCap=prevcap)
+
+ji.Mb <- function() list(p=runif(2), psi=runif(1),
+                         z=rep(1, M))
+ji.Mb()
+
+jp <- c("p", "psi", "N", "deviance")
+
+
+jm.Mb <- jags.model(file="Mb.jag", data=jd.Mb, inits=ji.Mb)
+
+jp.Mb <- coda.samples(jm.Mb, jp, n.iter=1000)
+
+
+plot(jp.Mb, ask=TRUE)
+
+(sp.Mb <- summary(jp.Mb))
+
+plot(1:2, sp.Mb$quantile[3:4,3], ylim=c(0,1), xlim=c(0,3))
+segments(1:2, sp.Mb$quantile[3:4,1], 1:2, sp.Mb$quantile[3:4,5])
