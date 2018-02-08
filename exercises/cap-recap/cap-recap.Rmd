@@ -137,7 +137,7 @@ M0.gibbs <- function(y, M, niter, tune) {
 
 ```{r}
 
-debugonce(M0.gibbs)
+## debugonce(M0.gibbs)
 
 fmM0.1 <- M0.gibbs(y=y, M=100, niter=1000, tune=c(0.15,0.05))
 
