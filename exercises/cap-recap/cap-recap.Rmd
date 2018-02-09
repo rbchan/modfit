@@ -96,18 +96,18 @@ M0.gibbs <- function(y, M, niter, tune) {
         }
 
         ## Sample from p(psi|dot)
-        ## psi.cand <- rnorm(1, psi, tune[1])
-        ## if(psi.cand>0 & psi.cand<1) {
-        ##     lp.z.cand <- dbinom(z, 1, psi.cand, log=TRUE)
-        ##     lp.psi.cand <- dbeta(psi.cand, 1, 1, log=TRUE)
-        ##     if(runif(1) < exp((sum(lp.z.cand)+lp.psi.cand)-
-        ##                       (sum(lp.z)+lp.psi))) {
-        ##         psi <- psi.cand
-        ##         lp.z <- lp.z.cand
-        ##         lp.psi <- lp.psi.cand
-        ##     }
-        ## }
-        psi <- rbeta(1, 1+sum(z), 1+M-sum(z))
+        psi.cand <- rnorm(1, psi, tune[1])
+        if(psi.cand>0 & psi.cand<1) {
+            lp.z.cand <- dbinom(z, 1, psi.cand, log=TRUE)
+            lp.psi.cand <- dbeta(psi.cand, 1, 1, log=TRUE)
+            if(runif(1) < exp((sum(lp.z.cand)+lp.psi.cand)-
+                              (sum(lp.z)+lp.psi))) {
+                psi <- psi.cand
+                lp.z <- lp.z.cand
+                lp.psi <- lp.psi.cand
+            }
+        }
+        ## psi <- rbeta(1, 1+sum(z), 1+M-sum(z))
 
         ## Sample from p(p|dot)
         p.cand <- rnorm(1, p, tune[2])
@@ -126,7 +126,7 @@ M0.gibbs <- function(y, M, niter, tune) {
         deviance <- -2*sum(lp.y)
 
         out[iter,] <- c(N, psi, p, deviance)
-    
+
     }
     return(out)
 }
