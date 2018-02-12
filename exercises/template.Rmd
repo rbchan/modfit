@@ -1,0 +1,46 @@
+---
+title: "Exercise 0: Template for Making an Exercise"
+author: "Ryan Chitwood, Warnell School of Forestry and Natural Resources, 
+University of Georgia, <11rchit@uga.edu>"
+---
+
+The purpose of this document is to provide a template for making your own
+exercises in this project. Ideally, you should be able to copy this file
+
+# The model
+
+This section introduces the model. You can use $/LaTeX/ to represent
+equations on there own line:
+$$equation goes here$$
+Or you can mention some $math$ in line.
+
+# The data
+
+This is an optional section that can be used to describe the
+data. You may want to make a simple table in markdown style:
+
+| Tables        | Are           | Cool  |
+| ------------- |:-------------:| -----:|
+| col 3 is      | right-aligned | $1600 |
+| col 2 is      | centered      |   $12 |
+| zebra stripes | are neat      |    $1 |
+
+Alternatively, you can display a data table using knitr's
+`kable` function.
+
+```{r echo = FALSE, results = 'asis'}
+library(knitr)
+kable(mtcars[1:5, ], caption = "A knitr kable.")
+```
+
+Discussing data and/or including tables is probably not needed for most
+exercises, but may be useful for explaining novel data types (e.g. spatial
+capture-recapture data).
+
+# Inference
+
+This section desc
+
+# Example
+
+# Assignment
