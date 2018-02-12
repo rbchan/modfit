@@ -1,3 +1,15 @@
+---
+title: "Exercise 0: Template for Making an Exercise"
+author: "Richard Chandler, Warnell School of Forestry and Natural
+Resources, University of Georgia, <rchandler@warnell.uga.edu>"
+---
+
+
+
+
+# The model
+
+Capture-recapture models are widely used in population 
 
 ## Simulate non-spatial, closed population cap-recap data: M0
 
