@@ -1,23 +1,32 @@
 ---
 title: "Exercise 0: Template for Making an Exercise"
-author: "Ryan Chitwood, Warnell School of Forestry and Natural Resources, 
-University of Georgia, <11rchit@uga.edu>"
+author: "Ryan Chitwood, Warnell School of Forestry and Natural
+Resources, University of Georgia, <11rchit@uga.edu>"
 ---
 
-The purpose of this document is to provide a template for making your own
-exercises in this project. Ideally, you should be able to copy this file
+The purpose of this document is to provide a template for making new
+exercises in this project. This template was based on the
+[Linear Model Exercise](exercises/lm/lm.md), so you can always refer
+back to that exercise to clarify any issues that may arise.
+
+
+
 
 # The model
 
-This section introduces the model. You can use $/LaTeX/ to represent
-equations on there own line:
+This section introduces the model. You can use $\LaTeX$ to represent
+equations on their own line:
 $$equation goes here$$
 Or you can mention some $math$ in line.
 
+
+
+
+
 # The data
 
-This is an optional section that can be used to describe the
-data. You may want to make a simple table in markdown style:
+This is an optional section that can be used to describe the data. You
+may want to make a simple table in markdown style:
 
 | Tables        | Are           | Cool  |
 | ------------- |:-------------:| -----:|
@@ -25,22 +34,138 @@ data. You may want to make a simple table in markdown style:
 | col 2 is      | centered      |   $12 |
 | zebra stripes | are neat      |    $1 |
 
-Alternatively, you can display a data table using knitr's
-`kable` function.
+Alternatively, you can display a table using knitr's `kable` function:
 
 ```{r echo = FALSE, results = 'asis'}
 library(knitr)
 kable(mtcars[1:5, ], caption = "A knitr kable.")
 ```
 
-Discussing data and/or including tables is probably not needed for most
-exercises, but may be useful for explaining novel data types (e.g. spatial
-capture-recapture data).
+Discussing data and/or including tables is probably not needed for
+most exercises, but may be useful for explaining novel data types
+(e.g. spatial capture-recapture data).
+
+
+
 
 # Inference
 
-This section desc
+This section describes how to fit the model of interest using two main
+approaches: first the classical, likelihood-based approach using
+maximum likelihood and second the Bayesian approach using Markov Chain
+Monte Carlo methods (MCMC hereafter).
+
+## Classical, likelihood-based approach
+
+This subsection describes the classical, likelihood-based approach to
+estimation using maximum likelihood. You will likely need to refer to
+$math$ inline, and equations on their own line:
+$$equation goes here$$
+
+Particularly, this section should describe the likelihood and/or the
+log-likelihood equations for the model of interest.
+
+## Bayesian approach
+
+This subsection describes the Bayesian approach to estimation using
+MCMC. This section is similar to above, but with more description
+needed.
+
+First, this section should describe the joint posterior distribution
+of the model of interest and potentially describe how the likelihood
+and joint posterior distributions are related.
+
+Next, you should explain how the joint posterior distribution relates
+to each parameter's full conditional distribution. This may involve
+briefly explaining how MCMC can be implemented for the model of
+interest. For this, you should include a blocked-off subsubsection to
+describe the Gibbs sampler steps for the model of interest:
+
+***
+#### Step 1: Sample $param$ from its full conditional distribution:
+
+$$
+Equation goes here
+$$
+
+#### More steps
+
+***
+
+Finally, explain how to sample from the full conditional
+distributions. See the [Linear Model Exercise](exercises/lm/lm.md),
+which does a good job of explaining conjugate priors and (more
+importantly) the use of Metropolis-Hastings algorithms to indirectly
+sample from each full conditional distribution.
 
 # Example
 
+Here, you describe how to fit the model of interest using both
+classical and Bayesian methods. For all of the below, use **R** code
+blocks in conjunction with text to explain each step.
+
+## Simulate a dataset
+
+## Classical analysis
+
+### Minimize the negative log-likelihood
+
+Show how to do this *the long way* first using the `optim` function or
+some other optimization function. Also, show how to obtain the
+SEs. Finally, if any convenient frequentist method is available in
+**R**, compare its estimates to yours.
+
+### Predictions
+
+Optionally, plot predictions from this method and interpret them.
+
+## Bayesian analysis
+
+### A Gibbs sampler in **R**
+
+Include an **R** code block for the Gibbs sampler.
+
+Note: the Gibbs sampler in
+[Linear Model Exercise](exercises/lm/lm.md) is not fully annotated, so
+you may want to include more comments in your code block to fully
+describe the sampler.
+
+Then include code blocks to run the function, summarize the
+results (using the `coda` package), plot the resulting samples, and
+other useful post-processing things.
+
+## Using **JAGS**
+
+Just like you compared your results to those obtained using **R**
+functions, use **JAGS** to do the same (if possible).
+
+Include a code block of your **JAGS** model (the actual model should
+probably be stored in a separate file).
+
+Then show the steps to run the model in **JAGS**.
+
+### Predictions
+
+Plot the predictions using the posterior predictive distribution.
+
 # Assignment
+
+Finally, describe the assigment for your model of interest to the
+reader. There are a multitude of ideas for assignments. Here is an
+example:
+
+1. Simulate a new dataset with some complication:
+   - A continuous covariate
+   - Or a categorical covariate
+   - Or a temporal covariate
+2. Write the equation for the likelihood in $\LaTeX$.
+3. Obtain the MLEs in **R** by minimizing the negative
+   log-likelihood.
+4. Write the joint posterior distribution in $\LaTeX$.
+5. Describe a Gibbs sampler for obtaining posterior samples.
+6. Implement the Gibbs sampler in **R** using the dataset that you
+   simulated earlier.
+7. Use **JAGS** to fit the model.
+
+
+

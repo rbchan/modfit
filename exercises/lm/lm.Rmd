@@ -59,7 +59,7 @@ $$l(\beta_0,\beta_1,\sigma|y_i) = \sum_{i=1}^n
 Plugging in values for the parameters will return the negative
 log-likelihood for a particular dataset. Classical
 inference involves finding the parameters that maximize the
-likelihood. It's easiest to let computers do the work, and __R__ has
+likelihood. It's easiest to let computers do the work, and **R** has
 many functions for the task.
 
 
@@ -304,7 +304,7 @@ confidence intervals 95 percent of the time.
 ## Bayesian analysis
 
 
-### A Gibbs sampler in `R`
+### A Gibbs sampler in **R**
 
 ```{R}
 lm.gibbs <- function(y, x, niter=10000, start, tune) {
@@ -465,7 +465,7 @@ stopCluster(cl)
 
 
 
-## Using __JAGS__
+## Using **JAGS**
 
 
 The first thing to do is create a text file with the model
