@@ -6,7 +6,7 @@ Resources, University of Georgia, <11rchit@uga.edu>"
 
 The purpose of this document is to provide a template for making new
 exercises in this project. This template was based on the
-[Linear Model Exercise](exercises/lm/lm.md), so you can always refer
+[Linear Model Exercise](lm/lm.md), so you can always refer
 back to that exercise to clarify any issues that may arise.
 
 
@@ -16,7 +16,7 @@ back to that exercise to clarify any issues that may arise.
 
 This section introduces the model. You can use $\LaTeX$ to represent
 equations on their own line:
-$$equation goes here$$
+$$equation-goes-here$$
 Or you can mention some $math$ in line.
 
 
@@ -60,7 +60,7 @@ Monte Carlo methods (MCMC hereafter).
 This subsection describes the classical, likelihood-based approach to
 estimation using maximum likelihood. You will likely need to refer to
 $math$ inline, and equations on their own line:
-$$equation goes here$$
+$$equation-goes-here$$
 
 Particularly, this section should describe the likelihood and/or the
 log-likelihood equations for the model of interest.
@@ -85,7 +85,7 @@ describe the Gibbs sampler steps for the model of interest:
 #### Step 1: Sample $param$ from its full conditional distribution:
 
 $$
-Equation goes here
+equation-goes-here
 $$
 
 #### More steps
@@ -93,7 +93,7 @@ $$
 ***
 
 Finally, explain how to sample from the full conditional
-distributions. See the [Linear Model Exercise](exercises/lm/lm.md),
+distributions. See the [Linear Model Exercise](lm/lm.md),
 which does a good job of explaining conjugate priors and (more
 importantly) the use of Metropolis-Hastings algorithms to indirectly
 sample from each full conditional distribution.
@@ -126,7 +126,7 @@ Optionally, plot predictions from this method and interpret them.
 Include an **R** code block for the Gibbs sampler.
 
 Note: the Gibbs sampler in
-[Linear Model Exercise](exercises/lm/lm.md) is not fully annotated, so
+[Linear Model Exercise](lm/lm.md) is not fully annotated, so
 you may want to include more comments in your code block to fully
 describe the sampler.
 
@@ -136,8 +136,9 @@ other useful post-processing things.
 
 ## Using **JAGS**
 
-Just like you compared your results to those obtained using **R**
-functions, use **JAGS** to do the same (if possible).
+Just like you compared your maximimum likelihood results to those
+obtained using **R** functions, use **JAGS** to do the same (if
+possible).
 
 Include a code block of your **JAGS** model (the actual model should
 probably be stored in a separate file).
