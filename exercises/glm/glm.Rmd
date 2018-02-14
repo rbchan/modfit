@@ -1,3 +1,14 @@
-# Logistic regression
+---
+title: "Exercise 2: Fitting a generalized linear models using maximum likelihood and Gibbs sampling"
+author: "Ryan Chitwood, Warnell School of Forestry and Natural
+Resources, University of Georgia, <11rchit@uga.edu>"
+---
 
-# Poisson regression
+
+
+
+# The model
+
+Generalized linear models are a logical next step in statistical
+models in ecology. Often ecological studies involve measuring response
+variables that do not satisfy the basic assumption
