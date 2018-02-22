@@ -1,0 +1,125 @@
+---
+title: "Exercise IV: Single-season occupancy model"
+author: "Ryan Chitwood, Warnell School of Forestry and Natural
+Resources, University of Georgia, <11rchit@uga.edu>"
+---
+
+
+
+
+# The model
+
+The basic, single-season occupancy model.
+$$z_i \sim \mathrm{Bern}(\psi) \qquad y_{ij} \sim \mathrm{Bern}(z_i \times p)$$
+
+
+## The data
+
+Can be simulated like so:
+
+```{r}
+## Define parameters
+psi <- 0.5 # occupancy probability
+p <- 0.5 # detection probability
+I <- 30  # nSites
+J <- 3  # nOccasions
+
+## Simulate occurence state
+z <- rbinom(I, 1, psi) # true occurence state (unobserved)
+
+## Simulate data
+y <- matrix(NA, I, J)
+for(j in 1:J) {
+    y[, j] <- rbinom(I, 1, z*p)
+}
+
+## How many sites did we miss?
+sum(z) - sum(apply(y, 1, max))
+```
+
+## Gibbs sampler in **R**
+
+```{r}
+M0.gibbs <- function(y, niter, tune) {
+
+    I <- nrow(y)
+    J <- ncol(y)
+    occupied <- rowSums(y)>0
+
+    ## Initial values
+    z <- rep(1, I)
+    psi <- runif(1)
+    p <- runif(1)
+
+    ## Initial densities
+    lp.y <- dbinom(y, 1, z*p, log=TRUE)
+    lp.z <- dbinom(z, 1, psi, log=TRUE)
+    lp.psi <- dbeta(psi, 1, 1, log=TRUE)
+    lp.p <- dbeta(p, 1, 1, log=TRUE)
+
+    out <- matrix(NA, niter, 3)
+    colnames(out) <- c("psi", "p", "deviance")
+
+    for(iter in 1:niter) {
+        ## Sample from p(z|dot)
+        for(i in 1:I) {
+            if(occupied[i])
+                next
+            z.cand <- 1-z[i]
+            lp.z.cand <- dbinom(z.cand, 1, psi, log=TRUE)
+            lp.y.cand <- dbinom(y[i,], 1, z.cand*p, log=TRUE)
+            if(runif(1) < exp((lp.z.cand+sum(lp.y.cand)) -
+                              (lp.z[i]+sum(lp.y[i,])))) {
+                z[i] <- z.cand
+                lp.y[i,] <- lp.y.cand
+                lp.z[i] <- lp.z.cand
+            }
+        }
+
+        ## Sample from p(psi|dot)
+        psi.cand <- rnorm(1, psi, tune[1])
+        if(psi.cand>0 & psi.cand<1) {
+            lp.z.cand <- dbinom(z, 1, psi.cand, log=TRUE)
+            lp.psi.cand <- dbeta(psi.cand, 1, 1, log=TRUE)
+            if(runif(1) < exp((sum(lp.z.cand)+lp.psi.cand) -
+                              (sum(lp.z)+lp.psi))) {
+                psi <- psi.cand
+                lp.z <- lp.z.cand
+                lp.psi <- lp.psi.cand
+            }
+        }
+
+        ## Sample from p(p|dot)
+        p.cand <- rnorm(1, p, tune[2])
+        if(p.cand>0 & p.cand<1) {
+            lp.y.cand <- dbinom(y, 1, z*p.cand, log = TRUE)
+            lp.p.cand <- dbeta(p.cand, 1, 1, log = TRUE)
+            if(runif(1) < exp((sum(lp.y.cand)+lp.p.cand)-
+                              (sum(lp.y)+lp.p))) {
+                p <- p.cand
+                lp.y <- lp.y.cand
+                lp.p <- lp.p.cand
+            }
+        }
+
+        deviance <- -2*sum(lp.y)
+
+        out[iter,] <- c(psi, p, deviance)
+
+    }
+    return(out)
+}
+```
+
+```{r}
+
+fmM0.1 <- M0.gibbs(y=y, niter=1000, tune=c(0.15,0.05))
+
+library(coda)
+mcM0.1 <- as.mcmc(fmM0.1)
+plot(mcM0.1)
+
+rejectionRate(mcM0.1)
+
+
+```
