@@ -22,3 +22,7 @@ not be rendered correctly.
 
 There are likely to be mistakes in these exercises. Feel free to let
 me know if you find any, and I will try to correct them.
+
+Disclaimer: Any opinions, findings, and conclusions or recommendations
+expressed in this material are those of the author(s) and do not
+necessarily reflect the views of the National Science Foundation. 
