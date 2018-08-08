@@ -2,6 +2,7 @@
 title: "Exercise I: Fitting a linear model using maximum likelihood and Gibbs sampling"
 author: "Richard Chandler, Warnell School of Forestry and Natural
 Resources, University of Georgia, <rchandler@warnell.uga.edu>"
+layout: default
 ---
 
 
@@ -289,9 +290,9 @@ function.
 xpred <- seq(min(x), max(x), length.out=50)
 ypredCI <- predict(fm1, newdata=data.frame(x=xpred), interval="confidence")
 plot(x,y)
-lines(xseq, ypredCI[,"fit"])
-lines(xseq, ypredCI[,"lwr"], lty=2)
-lines(xseq, ypredCI[,"upr"], lty=2)
+lines(xpred, ypredCI[,"fit"])
+lines(xpred, ypredCI[,"lwr"], lty=2)
+lines(xpred, ypredCI[,"upr"], lty=2)
 ```
 
 If we repeated the study many times, the actual regression line (for
