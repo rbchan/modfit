@@ -21,7 +21,7 @@ students.
 
 Hopefully there will be many more coming soon.
 
-[Linear models](exercises/lm/lm.html)
+[Linear models](exercises/lm/lm.md)
 
 
 
