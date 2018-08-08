@@ -5,7 +5,8 @@ layout: default
 
 # Exercises
 
-[Linear models](./another-page.html).
+
+[Linear models](exercises/lm/lm.html).
 
 
 # Keys
