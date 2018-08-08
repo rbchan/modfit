@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+
+<meta name="author" content="Richard Chandler Warnell School of Forestry and Natural Resources University of Georgia rchandler@warnell.uga.edu" />
+
+
+<title>Key to Exercise I: Fitting a linear model using maximum likelihood and Gibbs sampling The exercise can be found in: stats/exercises/lm.txt</title>
+
+<script src="lm-key_files/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="lm-key_files/bootstrap-3.3.5/css/bootstrap.min.css" rel="stylesheet" />
+<script src="lm-key_files/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="lm-key_files/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="lm-key_files/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="lm-key_files/navigation-1.1/tabsets.js"></script>
+<link href="lm-key_files/highlightjs-1.1/default.css" rel="stylesheet" />
+<script src="lm-key_files/highlightjs-1.1/highlight.js"></script>
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs && document.readyState && document.readyState === "complete") {
+   window.setTimeout(function() {
+      hljs.initHighlighting();
+   }, 0);
+}
+</script>
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+</head>
+
+<body>
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+  height: auto;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+</style>
+
+
+
+<div class="container-fluid main-container">
+
+<!-- tabsets -->
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+</script>
+
+<!-- code folding -->
+
+
+
+
+
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore"><p>Key to Exercise I: Fitting a linear model using maximum likelihood and Gibbs sampling<br />
+The exercise can be found in: <span>stats/exercises/lm.txt</span></p></h1>
+<h4 class="author"><em><p>Richard Chandler<br />
+Warnell School of Forestry and Natural Resources<br />
+University of Georgia<br />
+<a href="mailto:rchandler@warnell.uga.edu">rchandler@warnell.uga.edu</a></p></em></h4>
+
+</div>
+
+
+<div id="simulate-a-dataset" class="section level1">
+<h1>Simulate a dataset</h1>
+<p>Here’s some <span>R</span> code to simulate <span class="math inline">\(x\)</span> and <span class="math inline">\(y\)</span>:</p>
+<pre class="r"><code>set.seed(348720) # To make this reproducible
+n &lt;- 100
+x &lt;- rnorm(n) # Covariate
+beta0 &lt;- -1
+beta1 &lt;- 1
+sigma &lt;- 2
+
+mu &lt;- beta0 + beta1*x     # expected value of y
+y &lt;- rnorm(n, mu, sigma)  # realized values (ie, the response variable)</code></pre>
+<p>Take a look:</p>
+<pre class="r"><code>cbind(x,y)[1:4,] # First 4 observations</code></pre>
+<pre><code>##                x          y
+## [1,] -0.93295514 -0.2223842
+## [2,] -0.02648071 -3.7537644
+## [3,] -0.23166802 -0.7151488
+## [4,]  1.64687862 -0.6357651</code></pre>
+<pre class="r"><code>plot(x,y)</code></pre>
+<p><img src="lm-key_files/figure-html/unnamed-chunk-2-1.png" width="672" /></p>
+</div>
+<div id="likelihood" class="section level1">
+<h1>Likelihood</h1>
+<p>The likelihood is the product of the <span class="math inline">\(n\)</span> Gaussian densities: <span class="math display">\[L(\beta_0,\beta_1,\sigma^2; {\bf y}) = \prod_{i=1}^n p(y_i|\beta_0,\beta_1,\sigma^2)\]</span> where <span class="math inline">\(p(y_i|\beta_0,\beta_1,\sigma^2) = \text{Norm}(y_i|\mu_i,\sigma^2)\)</span> and <span class="math inline">\(\mu_i = \beta_0 + \beta_1x_i\)</span>. The log-likelihood looks like this: <span class="math display">\[\ell(\beta_0,\beta_1,\sigma^2; {\bf y}) = \sum_{i=1}^n \log(p(y_i|\beta_0,\beta_1,\sigma^2))\]</span></p>
+<p>Here is an R function to compute the negative log-likelihood:</p>
+<pre class="r"><code>nll &lt;- function(pars) {
+    beta0 &lt;- pars[1]
+    beta1 &lt;- pars[2]
+    sigma &lt;- pars[3]
+    mu &lt;- beta0 + beta1*x
+    ll &lt;- dnorm(y, mean=mu, sd=sigma, log=TRUE)
+    -sum(ll)
+}</code></pre>
+</div>
+<div id="minimize-the-negative-log-likelihood" class="section level1">
+<h1>Minimize the negative log-likelihood</h1>
+<p>Now that we have data and a likelihood function, we need to find the parameter values that maximize the log-likelihood, or equivalently, minimize the negative log-likelihood. Before we do that, note that we could try the brute force approach of guessing parameter values, evaluating the likelihood, and then repeating until we can’t lower the negative log-likelihood anymore. For example:</p>
+<pre class="r"><code># Guess the parameter values and evalueate the likelihood
+starts &lt;- c(beta0=0,beta1=0,sigma=1)
+nll(starts)</code></pre>
+<pre><code>## [1] 397.9182</code></pre>
+<pre class="r"><code>## Another guess. This one is better because nll is lower
+starts2 &lt;- c(beta0=-1,beta1=0,sigma=1)
+nll(starts2)</code></pre>
+<pre><code>## [1] 352.6342</code></pre>
+<p>This is obviously a bad idea. Even with only three parameters, it would take forever to find the true maximum likelihood estimates (MLEs). Fortunately, there are many optimization functions in <code>R</code>. We’ll use <code>optim</code>, but <code>nlm</code> or <code>nlminb</code> would work just as well.</p>
+<p>The <code>optim</code> function requires starting values and a likelihood function. If the likelihood function needs arguments other than the parameter vector, you can pass these to optim through the <code>...</code> argument. If you want standard errors, you need to compute the hessian matrix.</p>
+<pre class="r"><code>fm &lt;- optim(starts, nll, hessian=TRUE)
+fm</code></pre>
+<pre><code>## $par
+##      beta0      beta1      sigma 
+## -0.8780081  0.8198882  2.1215936 
+## 
+## $value
+## [1] 217.1089
+## 
+## $counts
+## function gradient 
+##       98       NA 
+## 
+## $convergence
+## [1] 0
+## 
+## $message
+## NULL
+## 
+## $hessian
+##               beta0         beta1        sigma
+## beta0 22.2164990404 -2.0284602584 5.715464e-04
+## beta1 -2.0284602584 23.7002731112 8.536745e-04
+## sigma  0.0005715464  0.0008536745 4.443078e+01</code></pre>
+<p>The <code>par</code> component has the MLEs. The <code>value</code> component is the negative log-likelihood at the MLEs. The <code>convergence</code> value should be 0. To obtain the SEs, we need to first invert the Hessian to get the variance-covariance matrix:</p>
+<pre class="r"><code>vcov &lt;- solve(fm$hessian)
+SEs &lt;- sqrt(diag(vcov))</code></pre>
+<p>Now, let’s compare our results:</p>
+<pre class="r"><code>mles &lt;- fm$par # The maximum likelihood estimates
+cbind(Est=mles, SE=SEs)</code></pre>
+<pre><code>##              Est        SE
+## beta0 -0.8780081 0.2129932
+## beta1  0.8198882 0.2062182
+## sigma  2.1215936 0.1500231</code></pre>
+<p>to results from <code>lm</code>:</p>
+<pre class="r"><code>summary(lm(y~x))</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = y ~ x)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -5.2770 -1.4190 -0.1121  1.3182  4.3638 
+## 
+## Coefficients:
+##             Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)  -0.8780     0.2152  -4.081 9.16e-05 ***
+## x             0.8199     0.2083   3.936 0.000155 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 2.143 on 98 degrees of freedom
+## Multiple R-squared:  0.1365, Adjusted R-squared:  0.1277 
+## F-statistic: 15.49 on 1 and 98 DF,  p-value: 0.0001549</code></pre>
+<p>The results are very similar. The small differences are likely due to the use of maximum likelihood instead of ordinary least-squares, which is used by <code>lm</code>.</p>
+</div>
+<div id="joint-posterior-distribution-and-gibbs-sampling" class="section level1">
+<h1>Joint posterior distribution and Gibbs sampling</h1>
+<p>The joint posterior distribution is proportional to the product of the likelihood and the joint prior distribution. The priors are usually taken to be independent, so in this case we have: <span class="math inline">\(p(\beta_0,\beta_1,\sigma^2)=p(\beta_0)p(\beta1)p(\sigma^2)\)</span>, which means that we can write the posterior like this: <span class="math display">\[p(\beta_0,\beta_1,\sigma^2 | {\bf y}) \propto \left\{\prod_{i=1}^n p(y_i|\beta_0,\beta_1,\sigma^2)\right\}p(\beta_0)p(\beta_1)p(\sigma^2)\]</span> where, as before, <span class="math inline">\(p(y_i|\beta_0,\beta_1,\sigma^2) = \text{Norm}(y_i|\mu_i,\sigma^2)\)</span>. Here are three possibilities for the priors: <span class="math inline">\(p(\beta_0) = \text{Norm}(0,1000000)\)</span>, <span class="math inline">\(p(\beta_1) = \rm{Norm}(0,1000000)\)</span>, <span class="math inline">\(p(\sigma) = \text{Unif}(0,1000)\)</span>. It’s easy to show that the influence of the prior is negligible for moderate to large sample sizes.</p>
+<p>We can’t easily compute the joint posterior distribution analytically because it would require computing the normalizing constant in the previous equation. To do that, we would have to do a three-dimensional integration over the parameters. Fortunately, we can use MCMC to overcome the problem posed by intractable normalizing constants. Gibbs sampling is a type of MCMC algorithm that requires sampling each parameter from its full conditional distribution. The full conditional distribution for <span class="math inline">\(\beta_0\)</span> is: <span class="math display">\[p(\beta_0|\beta_1,\sigma^2,{\bf y}) \propto \left\{\prod_{i=1}^n p(y_i|\beta_0,\beta_1,\sigma^2)\right\}p(\beta_0)\]</span> This is the probability distribution for <span class="math inline">\(\beta_0\)</span>, conditional on all the other parameters in the model and the data. We can sample from this distribution using the Metropolis-Hastings (MH) algorighm. For example, we can propose <span class="math inline">\(\beta_0^{*} \sim \text{Norm}(\beta_0, \text{tune}_1)\)</span> and accept this candidate value with probability <span class="math inline">\(\min(1,R)\)</span> where <span class="math inline">\(R\)</span> is the MH acceptance ratio: <span class="math display">\[R = \frac{\left\{\prod_{i=1}^n p(y_i|\beta_0^{*},\beta_1,\sigma^2)\right\}p(\beta_0^{*})p(\beta_0|\beta_0^{*})}{\left\{\prod_{i=1}^n p(y_i|\beta_0,\beta_1,\sigma^2)\right\}p(\beta_0)p(\beta_0^{*}|\beta_0)}\]</span> Notice that the numerator and the denominator are made up of the product of the likelihood, the prior, and the proposal distributions. The likelihood and prior in the numerator are associated with the the candidate value. The proposal distribution in the numerator is the probability density associated with transitioning from <span class="math inline">\(\beta_0^{*}\)</span> back to <span class="math inline">\(\beta_0\)</span>. The denominator has the likelihood and prior of the current values, along with the probability density associated with moving to the candidate from the current value of <span class="math inline">\(\beta_0\)</span>.</p>
+<p>Sampling from the full conditional distributions of the other two parameters can be achieved in a similar fashion. Here are the other two full conditionals: <span class="math display">\[p(\beta_1|\beta_0,\sigma^2,{\bf y}) \propto \left\{\prod_{i=1}^n p(y_i|\beta_0,\beta_1,\sigma^2)\right\}p(\beta_1)\]</span></p>
+<p><span class="math display">\[p(\sigma^2|\beta_0,\sigma^2,{\bf y}) \propto \left\{\prod_{i=1}^n p(y_i|\beta_0,\beta_1,\sigma^2)\right\}p(\sigma^2)\]</span></p>
+<p>A few things to note about the Metropolis-Hastings algorithm. First, if the proposal distribution is symmetric, you can ignore it when computing <span class="math inline">\(R\)</span>. Second, if you use conjugate priors, you can often sample directly from the full conditional distributions rather than use the MH algorithm. Here’s a link to a handy cheat-sheat for conjugate priors: <a href="https://en.wikipedia.org/wiki/Conjugate_prior#Table_of_conjugate_distributions" class="uri">https://en.wikipedia.org/wiki/Conjugate_prior#Table_of_conjugate_distributions</a>. The last thing to mention about the HM algorithm is that you want to accept about 30-40% of the proposals, and you therefore have to â€˜tune’ the algorithm to make it efficient. This means fiddling with the parameter <span class="math inline">\(\text{tune}_1\)</span> shown above. It’s usually pretty easy to find good tuning values, but you can also use an adaptive phase to do this automatically.</p>
+</div>
+<div id="a-gibbs-sampler-in-r" class="section level1">
+<h1>A Gibbs sampler in <span>R</span></h1>
+<pre class="r"><code>lm.gibbs &lt;- function(y, x, niter=10000, start, tune) {
+samples &lt;- matrix(NA, niter, 3)
+colnames(samples) &lt;- c(&quot;beta0&quot;, &quot;beta1&quot;, &quot;sigma&quot;)
+beta0 &lt;- start[1]; beta1 &lt;- start[2]; sigma &lt;- start[3]
+
+for(iter in 1:niter) {
+    ## Sample from p(beta0|dot)
+    mu &lt;- beta0 + beta1*x
+    ll.y &lt;- sum(dnorm(y, mu, sigma, log=TRUE))
+    prior.beta0 &lt;- dnorm(beta0, 0, 1000, log=TRUE)
+    beta0.cand &lt;- rnorm(1, beta0, tune[1])
+    mu.cand &lt;- beta0.cand + beta1*x
+    ll.y.cand &lt;- sum(dnorm(y, mu.cand, sigma, log=TRUE))
+    prior.beta0.cand &lt;- dnorm(beta0.cand, 0, 1000, log=TRUE)
+    mhr &lt;- exp((ll.y.cand+prior.beta0.cand) - (ll.y+prior.beta0))
+    if(runif(1) &lt; mhr) {
+        beta0 &lt;- beta0.cand
+    }
+
+    ## Sample from p(beta1|dot)
+    mu &lt;- beta0 + beta1*x
+    ll.y &lt;- sum(dnorm(y, mu, sigma, log=TRUE))
+    prior.beta1 &lt;- dnorm(beta1, 0, 1000, log=TRUE)
+    beta1.cand &lt;- rnorm(1, beta1, tune[2])
+    mu.cand &lt;- beta0 + beta1.cand*x
+    ll.y.cand &lt;- sum(dnorm(y, mu.cand, sigma, log=TRUE))
+    prior.beta1.cand &lt;- dnorm(beta1.cand, 0, 1000, log=TRUE)
+    mhr &lt;- exp((ll.y.cand+prior.beta1.cand) - (ll.y+prior.beta1))
+    if(runif(1) &lt; mhr) {
+        beta1 &lt;- beta1.cand
+    }
+
+    ## Sample from p(sigma|dot)
+    ll.y &lt;- sum(dnorm(y, mu, sigma, log=TRUE))
+    prior.sigma &lt;- dunif(sigma, 0, 1000, log=TRUE)
+    sigma.cand &lt;- rlnorm(1, log(sigma), tune[3])
+    mu &lt;- beta0 + beta1*x
+    ll.y &lt;- sum(dnorm(y, mu, sigma, log=TRUE))
+    prior.sigma &lt;- dunif(sigma, 0, 1000, log=TRUE)
+    prop.sigma &lt;- dlnorm(sigma, log(sigma.cand), tune[3], log=TRUE)
+    ll.y.cand &lt;- sum(dnorm(y, mu, sigma.cand, log=TRUE))
+    prior.sigma.cand &lt;- dunif(sigma.cand, 0, 1000, log=TRUE)
+    prop.sigma.cand &lt;- dlnorm(sigma.cand, log(sigma), tune[3], log=TRUE)
+    mhr &lt;- exp((ll.y.cand+prior.sigma.cand+prop.sigma) -
+               (ll.y+prior.sigma+prop.sigma.cand))
+    if(runif(1) &lt; mhr) {
+        sigma &lt;- sigma.cand
+    }
+    samples[iter,] &lt;- c(beta0, beta1, sigma)
+}
+return(samples)
+}</code></pre>
+<p>The function <code>lm.gibbs</code> is fairly long and dense. Take a look at the script <code>stats/keys/lm-key-old.R</code> to see an annotated function along with several other functions for making the algorithm much faster. These examples include the use of <span>Rcpp</span> and <span>RcppArmadillo</span>.</p>
+<p>Here’s how to run the function:</p>
+<pre class="r"><code>out1 &lt;- lm.gibbs(y=y, x=x, niter=1000,
+                start=c(0,0,1),
+                tune=c(0.4, 0.4, 0.2))</code></pre>
+<p>The <code>coda</code> package makes it easy to look at the results:</p>
+<pre class="r"><code>library(coda)
+mc1 &lt;- mcmc(out1)
+summary(mc1)</code></pre>
+<pre><code>## 
+## Iterations = 1:1000
+## Thinning interval = 1 
+## Number of chains = 1 
+## Sample size per chain = 1000 
+## 
+## 1. Empirical mean and standard deviation for each variable,
+##    plus standard error of the mean:
+## 
+##          Mean     SD Naive SE Time-series SE
+## beta0 -0.8823 0.2306 0.007293        0.01449
+## beta1  0.8195 0.2445 0.007732        0.01824
+## sigma  2.1713 0.1678 0.005307        0.01243
+## 
+## 2. Quantiles for each variable:
+## 
+##         2.5%     25%     50%     75%   97.5%
+## beta0 -1.322 -1.0248 -0.8839 -0.7279 -0.4266
+## beta1  0.303  0.6608  0.8444  0.9826  1.2564
+## sigma  1.831  2.0815  2.1724  2.2778  2.4836</code></pre>
+<p>There are many things to take note of. The <code>Mean</code> is the posterior mean. The <code>SD</code> is the posterior standard deviation, which will be similar to the SE you would get from a classical analysis. The <code>Naive SE</code> and <code>Time-series SE</code> tell you about the Monte Carlo error associated with the posterior means. In Bayesian inference, point estimates aren’t the main object of inference. Instead, you want the entire posterior distribution, and the quantiles are helpful for summarizing the distributions. You can also view the posteriors (along with the trace plots) using the <code>plot</code> method in the <code>coda</code> package.</p>
+<pre class="r"><code>plot(mc1)</code></pre>
+<p><img src="lm-key_files/figure-html/unnamed-chunk-12-1.png" width="672" /></p>
+<p>You can see that there is a short burn-in period that should be discarded. You can do that, and optionally thin the chain, using the <code>window</code> method:</p>
+<pre class="r"><code>mc1b &lt;- window(mc1, start=101, thin=1)</code></pre>
+<p>Other things you can do in the <code>coda</code> package include assessing convergence and looking at the rejection rate.</p>
+<pre class="r"><code>rejectionRate(mc1b)</code></pre>
+<pre><code>##     beta0     beta1     sigma 
+## 0.4883204 0.4816463 0.6017798</code></pre>
+<p>These should be closer to 0.65 to increase our effective sample size<a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a>. Let’s rerun the sampler with new tuning values and this time using 2 chains run in parallel:</p>
+<pre class="r"><code>library(parallel)
+nCores &lt;- 2
+cl &lt;- makeCluster(nCores)
+clusterExport(cl, c(&quot;lm.gibbs&quot;, &quot;y&quot;, &quot;x&quot;))
+clusterSetRNGStream(cl, 3479)
+out &lt;- clusterEvalQ(cl, {
+    mc &lt;- lm.gibbs(y=y, x=x, niter=1000,
+                   start=c(0,0,1), tune=c(0.7,0.7,0.3))
+    return(mc)
+})
+mcp &lt;- as.mcmc.list(lapply(out, function(x) mcmc(x)))</code></pre>
+<p>Looking at the chains is the best way to assess convergence, but you can look at diagnostics too:</p>
+<pre class="r"><code>plot(mcp)</code></pre>
+<p><img src="lm-key_files/figure-html/unnamed-chunk-16-1.png" width="672" /></p>
+<p>Close the connections</p>
+<pre class="r"><code>stopCluster(cl)</code></pre>
+</div>
+<div id="using-jags" class="section level1">
+<h1>Using <span>JAGS</span></h1>
+<p>The first thing to do is create a text file with the model description. Mine is called <code>lm-JAGS.jag</code>, and it looks like this:</p>
+<p>Now we need to put the data in a named list, choose the parameters we want to monitor, and create a function to generate random initial values.</p>
+<pre class="r"><code>jd &lt;- list(y=y, x=x, n=n)
+str(jd)</code></pre>
+<pre><code>## List of 3
+##  $ y: num [1:100] -0.222 -3.754 -0.715 -0.636 -0.522 ...
+##  $ x: num [1:100] -0.933 -0.0265 -0.2317 1.6469 0.2916 ...
+##  $ n: num 100</code></pre>
+<pre class="r"><code>jp &lt;- c(&quot;beta0&quot;, &quot;beta1&quot;, &quot;sigma&quot;)
+
+ji &lt;- function() {
+    list(beta0=rnorm(1), beta1=rnorm(1), sigmaSq=runif(1))
+}
+ji()</code></pre>
+<pre><code>## $beta0
+## [1] -0.3763193
+## 
+## $beta1
+## [1] 0.1359298
+## 
+## $sigmaSq
+## [1] 0.07151817</code></pre>
+<p>Here’s how to compile the model with 3 chains, adapt, and then draw 5000 posterior samples for each chain.</p>
+<pre class="r"><code>library(rjags)
+jm &lt;- jags.model(&quot;lm-JAGS.jag&quot;, data=jd, inits=ji, n.chains=3,
+                 n.adapt=1000)
+jc &lt;- coda.samples(jm, jp, n.iter=5000)</code></pre>
+<p>Take a look:</p>
+<pre class="r"><code>summary(jc)</code></pre>
+<pre><code>## 
+## Iterations = 1001:6000
+## Thinning interval = 1 
+## Number of chains = 3 
+## Sample size per chain = 5000 
+## 
+## 1. Empirical mean and standard deviation for each variable,
+##    plus standard error of the mean:
+## 
+##          Mean     SD Naive SE Time-series SE
+## beta0 -0.8792 0.2175 0.001776       0.001792
+## beta1  0.8204 0.2157 0.001761       0.002252
+## sigma  2.1833 0.1588 0.001297       0.001750
+## 
+## 2. Quantiles for each variable:
+## 
+##          2.5%     25%     50%     75%   97.5%
+## beta0 -1.3086 -1.0257 -0.8773 -0.7325 -0.4573
+## beta1  0.3963  0.6759  0.8215  0.9663  1.2399
+## sigma  1.8971  2.0727  2.1734  2.2832  2.5196</code></pre>
+<p>Continue sampling where we left off.</p>
+<pre class="r"><code>jc2 &lt;- coda.samples(jm, jp, n.iter=1000)</code></pre>
+<p>Visualize</p>
+<pre class="r"><code>plot(jc2)</code></pre>
+<p><img src="lm-key_files/figure-html/unnamed-chunk-22-1.png" width="672" /></p>
+</div>
+<div id="discussion" class="section level1">
+<h1>Discussion</h1>
+<p>The keys to other exercises either won’t be made publically available, or they won’t include so much explanation.</p>
+</div>
+<div class="footnotes">
+<hr />
+<ol>
+<li id="fn1"><p>Although, it doesn’t really matter in this case because the Monte Carlo error rate is already very low<a href="#fnref1">↩</a></p></li>
+</ol>
+</div>
+
+
+
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

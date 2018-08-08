@@ -1,6 +1,5 @@
-title: Minimal theme
+title: stats
 #logo: /assets/img/logo.png
-description: Minimal is a theme for GitHub Pages.
-show_downloads: true
+description: Exercises in model fitting for my graduate students
 #google_analytics:
 theme: jekyll-theme-minimal
