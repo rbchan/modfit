@@ -3,6 +3,7 @@ title: "Exercise I: Fitting a linear model using maximum likelihood and Gibbs sa
 author: "Richard Chandler, Warnell School of Forestry and Natural
 Resources, University of Georgia, <rchandler@warnell.uga.edu>"
 layout: page
+output: html_document
 ---
 
 
