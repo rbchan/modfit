@@ -1,9 +1,10 @@
 title: stats
-name: Richard Chandler
-#logo: /assets/img/logo.png
+author: Richard Chandler
+email: rchandler@warnell.uga.edu
 description: Exercises in model fitting for my graduate students
-#google_analytics:
-theme: jekyll-theme-minimal
+theme: minima
 header_pages:
   - README.md
-  - ./exercises/lm/lm.md
+  - exercises.md
+  - keys.md
+  

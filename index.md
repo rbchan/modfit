@@ -1,8 +1,9 @@
 ---
-layout: default
+layout: home
+title: Exercises in model fitting for grad students
 ---
 
-# Overview
+## Overview
 
 This site is a work in progress. The plan is to create a series of
 exercises that demonstrate how to fit several classes of statistical
@@ -17,7 +18,7 @@ students.
 
 
 
-## Exercises
+### Exercises
 
 Hopefully there will be many more coming soon.
 
@@ -25,7 +26,7 @@ Hopefully there will be many more coming soon.
 
 
 
-## Keys
+### Keys
 
 Most keys won't be available, but here is one provided as an example:
 
