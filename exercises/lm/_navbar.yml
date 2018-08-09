@@ -1,11 +1,7 @@
-title:
-  - text: "Exercises in model fitting for grad students"
-    href: ../../index.html
+title: Linear model exercise
 left:
-  - text: "Home"
+  - text: Home
     href: ../../index.html
-  - text: "Exercises"
-    href: ../exercises.html
 right:
-  - text: GitHub
-    href: https://github.com
+  - text: Other exercises
+    href: ../exercises.html
