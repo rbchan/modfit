@@ -1,9 +1,11 @@
-title: "Exercises in model fitting for grad students"
+title:
+  - text: "Exercises in model fitting for grad students"
+    href: ../../index.html
 left:
   - text: "Home"
-    href: ../../index.md
+    href: ../../index.html
   - text: "Exercises"
-    href: ../exercises.md
+    href: ../exercises.html
 right:
   - text: GitHub
     href: https://github.com
