@@ -4,3 +4,6 @@ name: Richard Chandler
 description: Exercises in model fitting for my graduate students
 #google_analytics:
 theme: jekyll-theme-minimal
+header_pages:
+  - README.md
+  - ./exercises/lm/lm.md
