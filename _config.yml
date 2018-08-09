@@ -4,7 +4,6 @@ email: rchandler@warnell.uga.edu
 description: Exercises in model fitting for my graduate students
 theme: minima
 header_pages:
-  - README.md
-  - exercises.md
-  - keys.md
+  - exercises/exercises.md
+  - keys/keys.md
   
