@@ -5,5 +5,5 @@ title: Keys
 
 
 
-[Linear models](keys/lm/lm-key.html)
+[Linear models](lm/lm-key.html)
 

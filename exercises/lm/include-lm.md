@@ -3,7 +3,6 @@ title: Exercise I: Exercise I: Fitting a linear model using maximum likelihood a
 author: Richard Chandler
 email: rchandler@warnell.uga.edu
 layout: page
-mathjax: true
 ---
 
 
