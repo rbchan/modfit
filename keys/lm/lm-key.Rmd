@@ -1,20 +1,8 @@
----
-author:
-- |
-    Richard Chandler\
-    Warnell School of Forestry and Natural Resources\
-    University of Georgia\
-    <rchandler@warnell.uga.edu>
-title: |
-    Key to Exercise I: Fitting a linear model using maximum likelihood and
-    Gibbs sampling\
-    The exercise can be found in: [stats/exercises/lm.txt]{}
----
 
-Simulate a dataset
-==================
+## Simulate a dataset
 
-Here's some [R]{} code to simulate $x$ and $y$:
+
+Here's some `R` code to simulate $x$ and $y$:
 
 ```{R}
 set.seed(348720) # To make this reproducible
@@ -37,8 +25,8 @@ plot(x,y)
 ```
 
 
-Likelihood
-==========
+## Likelihood
+
 
 The likelihood is the product of the $n$ Gaussian densities:
 $$L(\beta_0,\beta_1,\sigma^2; {\bf y}) = \prod_{i=1}^n p(y_i|\beta_0,\beta_1,\sigma^2)$$
@@ -60,8 +48,8 @@ nll <- function(pars) {
 }
 ```
 
-Minimize the negative log-likelihood
-====================================
+### Minimize the negative log-likelihood
+
 
 Now that we have data and a likelihood function, we need to find the
 parameter values that maximize the log-likelihood, or equivalently,
@@ -122,8 +110,8 @@ The results are very similar. The small differences are likely due to
 the use of maximum likelihood instead of ordinary least-squares, which
 is used by `lm`.
 
-Joint posterior distribution and Gibbs sampling
-===============================================
+## Joint posterior distribution and Gibbs sampling
+
 
 The joint posterior distribution is proportional to the product of the
 likelihood and the joint prior distribution. The priors are usually
@@ -183,8 +171,8 @@ parameter $\text{tune}_1$ shown above. It's usually pretty easy to
 find good tuning values, but you can also use an adaptive phase to do
 this automatically.
 
-A Gibbs sampler in [R]{}
-========================
+### A Gibbs sampler in [R]{}
+
 
 ```{R}
 lm.gibbs <- function(y, x, niter=10000, start, tune) {
@@ -327,8 +315,8 @@ stopCluster(cl)
 ```
 
 
-Using [JAGS]{}
-==============
+### Using [JAGS]{}
+
 
 The first thing to do is create a text file with the model description.
 Mine is called `lm-JAGS.jag`, and it looks like this:
@@ -377,8 +365,8 @@ Visualize
 plot(jc2)
 ```
 
-Discussion
-===========
+## Discussion
+
 
 The keys to other exercises either won't be made publically available,
 or they won't include so much explanation.
