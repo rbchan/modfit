@@ -6,6 +6,8 @@ layout: page
 ---
 
 
+## Linear model exercise
+
 {% include lm.html %}
 
 
