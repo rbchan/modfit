@@ -31,7 +31,7 @@ More coming soon.
 
 Most keys won't be available, but here is one provided as an example:
 
-[Linear models](keys/lm/include-lm-key.md}
+[Linear models](keys/lm/include-lm-key.md)
 
 
 
