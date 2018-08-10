@@ -1,5 +1,7 @@
 # stats
-## Exercises in model fitting for grad students
+## Exercises in statistical model fitting for grad students
+
+### Overview
 
 These assignments are meant for new graduate students in [my
 lab](http://chandlerlab.uga.edu/). They assume that students have some
@@ -8,20 +10,18 @@ need help getting through the first few exercises before they are
 comfortable with the process of writing likelihood equations and joint
 posterior distributions.
 
-The recommended way **to view the exercises** is to compile the .tex
-files with `pdflatex` or the .Rmd files with `rmarkdown`. However,
-there will also be a .md file that can be viewed directly in github. I
-recommend that you view the .md files in Chrome with the 'GitHub with
-MathJax' extension enabled so that you can read the equations. 
 
-Most keys will not be available. **To view the keys** that are
-available (eg, the lm key), you can create a PDF by running 'knitr' on
-the .Rnw file. See the stats/keys/lm/lm-build.R file for
-examples. There will also be a markdown file, but the equations may
-not be rendered correctly.
+### Viewing the exercises and keys
 
-There are likely to be mistakes in these exercises. Feel free to let
-me know if you find any, and I will try to correct them.
+The recommended way to view the exercises and keys is through the [companion
+website](https://rbchan.github.io/stats/). However, you can also build
+the files yourself by running 'knitr' on source code in this
+repository. Most keys will not be publically available. 
+
+
+### Caution
+
+There are bound to be mistakes in the exercises. Please let me know if you find any and I will try to correct them.
 
 Disclaimer: Any opinions, findings, and conclusions or recommendations
 expressed in this material are those of the author(s) and do not
