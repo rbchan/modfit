@@ -1,9 +1,0 @@
-title: stats
-author: Richard Chandler
-email: rchandler@warnell.uga.edu
-description: Exercises in model fitting for graduate students in my lab
-theme: minima
-header_pages:
-  - exercises/exercises.md
-  - keys/keys.md
-exclude: [.Rmd]

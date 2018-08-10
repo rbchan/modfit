@@ -2,14 +2,16 @@
 title: "Exercise I: Fitting a linear model using maximum likelihood and Gibbs sampling"
 author: "Richard Chandler, Warnell School of Forestry and Natural
 Resources, University of Georgia, <rchandler@warnell.uga.edu>"
+theme: minima
 layout: page
-output: html_document
+output: 
+  html_document:
+    self_contained: false
 ---
 
 ```{R,echo=FALSE,eval=FALSE}
 library(knitr)
 render_jekyll()
-
 ```
 
 
