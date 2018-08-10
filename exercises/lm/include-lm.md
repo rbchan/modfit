@@ -7,4 +7,6 @@ mathjax: true
 ---
 
 {% include lm.html %}
-{% include mathjax.html %}
+
+
+<!-- {% include mathjax.html %} -->
