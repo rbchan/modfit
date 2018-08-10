@@ -6,6 +6,7 @@ layout: page
 mathjax: true
 ---
 
-{% include mathjax.html %}
+<!-- {% include mathjax.html %} -->
+
 {% include lm.html %}
 
