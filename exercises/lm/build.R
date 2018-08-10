@@ -9,6 +9,6 @@ library(rmarkdown)
 
 
 render("lm.Rmd",
-       output_format="html_fragment",
+       output_format=html_fragment(mathjax=TRUE),
        ##html_fragment(self_contained=TRUE),
        output_dir="../../_includes")
