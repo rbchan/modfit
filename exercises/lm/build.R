@@ -8,7 +8,7 @@ library(rmarkdown)
 
 
 
-out.file <- render("lm-key.Rmd",
+out.file <- render("lm.Rmd",
                    output_format=html_fragment(
                        mathjax=TRUE,
                        ## includes =
