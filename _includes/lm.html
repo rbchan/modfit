@@ -9,10 +9,9 @@
 <meta name="generator" content="pandoc" />
 
 
-<meta name="author" content="Richard Chandler, Warnell School of Forestry and Natural Resources, University of Georgia, rchandler@warnell.uga.edu" />
 
 
-<title>Exercise I: Fitting a linear model using maximum likelihood and Gibbs sampling</title>
+<title></title>
 
 <script src="lm_files/jquery-1.11.3/jquery.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -118,8 +117,6 @@ $(document).ready(function () {
 
 
 
-<h1 class="title toc-ignore">Exercise I: Fitting a linear model using maximum likelihood and Gibbs sampling</h1>
-<h4 class="author"><em>Richard Chandler, Warnell School of Forestry and Natural Resources, University of Georgia, <a href="mailto:rchandler@warnell.uga.edu">rchandler@warnell.uga.edu</a></em></h4>
 
 </div>
 
@@ -203,7 +200,7 @@ y &lt;- rnorm(n, mu, sigma)  # realized values (ie, the response variable)</code
 ## [3,] -0.23166802 -0.7151488
 ## [4,]  1.64687862 -0.6357651</code></pre>
 <pre class="r"><code>plot(x,y)</code></pre>
-<p><img src="lm_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
+<p><img src="lm_files/figure-html/unnamed-chunk-2-1.png" width="672" /></p>
 </div>
 <div id="classical-analysis" class="section level2">
 <h2>Classical analysis</h2>
@@ -294,7 +291,7 @@ plot(x,y)
 lines(xpred, ypredCI[,&quot;fit&quot;])
 lines(xpred, ypredCI[,&quot;lwr&quot;], lty=2)
 lines(xpred, ypredCI[,&quot;upr&quot;], lty=2)</code></pre>
-<p><img src="lm_files/figure-html/unnamed-chunk-10-1.png" width="672" /></p>
+<p><img src="lm_files/figure-html/unnamed-chunk-9-1.png" width="672" /></p>
 <p>If we repeated the study many times, the actual regression line (for the true values of <span class="math inline">\(\beta_0\)</span> and <span class="math inline">\(\beta_1\)</span> should lie within these confidence intervals 95 percent of the time.</p>
 </div>
 </div>
@@ -385,7 +382,7 @@ summary(mc1)</code></pre>
 ## sigma  1.831  2.0815  2.1724  2.2778  2.4836</code></pre>
 <p>There are many things to take note of. The <code>Mean</code> is the posterior mean. The <code>SD</code> is the posterior standard deviation, which will be similar to the SE you would get from a classical analysis. The <code>Naive SE</code> and <code>Time-series SE</code> tell you about the Monte Carlo error associated with the posterior means. In Bayesian inference, point estimates aren’t the main object of inference. Instead, you want the entire posterior distribution, and the quantiles are helpful for summarizing the distributions. You can also view the posteriors (along with the trace plots) using the <code>plot</code> method in the <code>coda</code> package.</p>
 <pre class="r"><code>plot(mc1)</code></pre>
-<p><img src="lm_files/figure-html/unnamed-chunk-14-1.png" width="672" /></p>
+<p><img src="lm_files/figure-html/unnamed-chunk-13-1.png" width="672" /></p>
 <p>You can see that there is a short burn-in period that should be discarded. You can do that, and optionally thin the chain, using the <code>window</code> method:</p>
 <pre class="r"><code>mc1b &lt;- window(mc1, start=101, thin=1)</code></pre>
 <p>Other things you can do in the <code>coda</code> package include assessing convergence and looking at the rejection rate.</p>
@@ -405,7 +402,7 @@ out &lt;- clusterEvalQ(cl, {
 })
 mcp &lt;- as.mcmc.list(lapply(out, function(x) mcmc(x)))</code></pre>
 <pre class="r"><code>plot(mcp)</code></pre>
-<p><img src="lm_files/figure-html/unnamed-chunk-18-1.png" width="672" /></p>
+<p><img src="lm_files/figure-html/unnamed-chunk-17-1.png" width="672" /></p>
 <p>Looking at the chains is the best way to assess convergence, but you can look at diagnostics too:</p>
 <pre class="r"><code>gelman.diag(mcp) # Point ests. should be &lt;1.1 or so</code></pre>
 <pre><code>## Potential scale reduction factors:
@@ -480,16 +477,16 @@ jm &lt;- jags.model(&quot;lm-JAGS.jag&quot;, data=jd, inits=ji, n.chains=3,
 ##    plus standard error of the mean:
 ## 
 ##          Mean     SD Naive SE Time-series SE
-## beta0 -0.8790 0.2205 0.001800       0.001827
-## beta1  0.8233 0.2120 0.001731       0.002200
-## sigma  2.1799 0.1608 0.001313       0.001927
+## beta0 -0.8791 0.2215 0.001809       0.001808
+## beta1  0.8178 0.2129 0.001738       0.002247
+## sigma  2.1817 0.1606 0.001312       0.001766
 ## 
 ## 2. Quantiles for each variable:
 ## 
 ##          2.5%     25%     50%     75%   97.5%
-## beta0 -1.3103 -1.0286 -0.8776 -0.7307 -0.4434
-## beta1  0.4098  0.6819  0.8223  0.9674  1.2341
-## sigma  1.8940  2.0667  2.1722  2.2807  2.5269</code></pre>
+## beta0 -1.3156 -1.0290 -0.8794 -0.7278 -0.4533
+## beta1  0.4027  0.6736  0.8180  0.9592  1.2369
+## sigma  1.8966  2.0676  2.1720  2.2859  2.5167</code></pre>
 <p>Continue sampling where we left off.</p>
 <pre class="r"><code>jc2 &lt;- coda.samples(jm, jp, n.iter=1000)</code></pre>
 <p>Visualize</p>
@@ -507,7 +504,7 @@ plot(x,y)
 matlines(xpred, Ey, col=rgb(0,1,0,0.1))
 lines(xpred, apply(Ey, 1, quantile, prob=0.025), lty=2)
 lines(xpred, apply(Ey, 1, quantile, prob=0.975), lty=2)</code></pre>
-<p><img src="lm_files/figure-html/unnamed-chunk-25-1.png" width="672" /></p>
+<p><img src="lm_files/figure-html/unnamed-chunk-24-1.png" width="672" /></p>
 </div>
 </div>
 </div>
