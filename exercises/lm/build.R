@@ -11,13 +11,13 @@ library(rmarkdown)
 out.file <- render("lm.Rmd",
                    output_format=html_fragment(
                        mathjax=TRUE,
-    ##           includes =
-    ##               includes(before_body="mathjax.html"),
+                       includes =
+                           includes(before_body="mathjax.html"),
                        self_contained=TRUE),
                    output_dir="../../_includes")
 
 lm.html.in <- readLines(out.file)
 ## mathjax.in <- readLines("mathjax.html")
 ## lm.html.out <- c(mathjax.in, lm.html.in)
-lm.html.out <- c("{% include mathjax.html %}", lm.html.in)
-writeLines(lm.html.out, out.file)
+## lm.html.out <- c("{% include mathjax.html %}", lm.html.in)
+## writeLines(lm.html.out, out.file)
