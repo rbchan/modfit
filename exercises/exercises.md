@@ -4,4 +4,5 @@ title: Exercises
 ---
 
 
-### Linear models
+
+[Linear models](exercises/lm/include-lm.md)

@@ -4,6 +4,6 @@ title: Keys
 ---
 
 
-### Linear models
 
+[Linear models](keys/lm/lm-key.html)
 
