@@ -4,9 +4,9 @@ author: "Richard Chandler, Warnell School of Forestry and Natural
 Resources, University of Georgia, <rchandler@warnell.uga.edu>"
 theme: minima
 layout: page
-output: 
-  html_document:
-    self_contained: false
+output: html_document
+#  html_document:
+#    self_contained: false
 ---
 
 ```{R,echo=FALSE,eval=FALSE}
