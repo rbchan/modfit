@@ -6,7 +6,11 @@ layout: page
 output: html_document
 ---
 
+```{R,echo=FALSE,eval=FALSE}
+library(knitr)
+render_jekyll()
 
+```
 
 
 # The model
