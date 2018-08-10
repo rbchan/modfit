@@ -7,3 +7,4 @@ header_pages:
   - exercises/exercises.md
   - keys/keys.md
 exclude: [.Rmd]
+mathjax: true
