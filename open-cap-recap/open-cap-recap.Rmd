@@ -1,8 +1,0 @@
-# Basic open capture recapture model
-
-## The model
-
-
-## Estimation
-
-Tip: p(z_{it}|z_{it-1}, z_{it+1})
