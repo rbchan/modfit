@@ -50,10 +50,10 @@ hmc.sample.lm <- function(data, n.iter, n.leap, eps) {
         m <- rnorm(n.theta, 0, 1) ## Could use rmvnorm(1, 0, M)
         m.new <- m
         ## Leapfrog
-        if(L>n.leap)
-            L <- 2
-        for(j in 1:L) {
-            ## for(j in 1:n.leap) {
+        ## if(L>n.leap)
+        ##     L <- 2
+        ## for(j in 1:L) {
+        for(j in 1:n.leap) {
             grad.lp <- as.vector(fg$gr(theta))
             m.new <- m + eps/2 * grad.lp
             theta.cand <- theta + eps * Minv %*% m.new
@@ -62,7 +62,7 @@ hmc.sample.lm <- function(data, n.iter, n.leap, eps) {
                 m.new <- m.new + eps/2 * grad.lp.new
             }
         }
-        L <- L+1 ## Cycle through length of leapfrog trajectories
+        ## L <- L+1 ## Cycle through length of leapfrog trajectories
         num <- fg$fn(theta.cand) - 0.5*(m.new %*% Minv %*% m.new)
         den <- fg$fn(theta) - 0.5*(m %*% Minv %*% m)
         if(runif(1) < exp(num - den)) {
@@ -79,7 +79,7 @@ d <- list(y=y, x=x)
 
 ## debugonce(hmc.sample.lm)
 
-samps <- hmc.sample.lm(data=d, n.iter=1000, n.leap=4*2, eps=c(0.2, 0.2, 0.1))
+samps <- hmc.sample.lm(data=d, n.iter=1000, n.leap=4*1, eps=c(0.2, 0.2, 0.1))
 
 plot(samps[,1:2])
 arrows(samps[-100, 1], samps[-100, 2],
