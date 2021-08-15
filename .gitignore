@@ -4,3 +4,5 @@ keys/
 *.pdf
 *.out
 *.DS_Store
+*.so
+*.o
