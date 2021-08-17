@@ -45,16 +45,15 @@ hmc.sample.lm <- function(data, n.iter, n.leap, eps) {
     samples <- matrix(NA_real_, n.iter, 3)
     colnames(samples) <- c("beta0", "beta1", "logSigma")
 
-    L <- 1
     for(i in 1:n.iter) {
         theta.cand <- theta
         m <- rnorm(n.theta, 0, 1) ## Could use rmvnorm(1, 0, M)
         m.new <- m
         ## Leapfrog
-        if(i==1)
-            plot(theta[1], theta[2], xlim=c(-5, 3), ylim=c(-3, 4))
+        ## if(i==1)
+        ##     plot(theta[1], theta[2], xlim=c(-5, 3), ylim=c(-3, 4))
         for(j in 1:n.leap) {
-            theta.old <- theta.cand
+            ## theta.old <- theta.cand
             grad.lp <- as.vector(fg$gr(theta.cand))
             m.new <- m.new + eps/2 * grad.lp
             theta.cand <- theta.cand + eps * Minv %*% m.new
@@ -62,11 +61,11 @@ hmc.sample.lm <- function(data, n.iter, n.leap, eps) {
             if(j == n.leap) {
                 m.new <- m.new + eps/2 * grad.lp.new
             }
-            if(i==1) {
-                points(theta.cand[1], theta.cand[2])
-                arrows(theta.old[1], theta.old[2], theta.cand[1], theta.cand[2],
-                       length=0.1, col="red")
-            }
+            ## if(i==1) {
+            ##     points(theta.cand[1], theta.cand[2])
+            ##     arrows(theta.old[1], theta.old[2], theta.cand[1], theta.cand[2],
+            ##            length=0.1, col="red")
+            ## }
         }
         num <- fg$fn(theta.cand) - 0.5*(m.new %*% Minv %*% m.new)
         den <- fg$fn(theta) - 0.5*(m %*% Minv %*% m)
