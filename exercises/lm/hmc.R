@@ -27,16 +27,25 @@ fg <- MakeADFun(d, par, DLL="lm_post")
 
 
 
-hmc.sample.lm <- function(data, n.iter, n.leap, eps) {
+hmc.sample.lm <- function(data, n.iter, n.leap, eps, M=NULL) {
 
+    require(mvtnorm)
+    
     ## Initial values
     beta0 <- 2
     beta1 <- 0
     sigma <- 5
     theta <- c(beta0=beta0, beta1=beta1, logSigma=log(sigma))
     n.theta <- length(theta)
-    M <- diag(n.theta)
-    Minv <- M
+    if(is.null(M)) {
+        M <- diag(n.theta)
+        Minv <- M
+    } else {
+        if(!isTRUE(all.equal(dim(M), c(n.theta, n.theta))))
+            stop("M should be a correlation matrix with dimensions", n.theta, "by", n.theta)
+        Minv <- solve(M)
+    }
+    zeros.m <- rep(0, n.theta)
 
     ## Use TMB to create log-posterior function and its gradient
     fg <- MakeADFun(data, as.list(theta), DLL="lm_post", silent=TRUE)
@@ -47,7 +56,8 @@ hmc.sample.lm <- function(data, n.iter, n.leap, eps) {
 
     for(i in 1:n.iter) {
         theta.cand <- theta
-        m <- rnorm(n.theta, 0, 1) ## Could use rmvnorm(1, 0, M)
+        ## m <- rnorm(n.theta, 0, 1) 
+        m <- drop(rmvnorm(1, zeros.m, M))
         m.new <- m
         ## Leapfrog
         ## if(i==1)
@@ -102,3 +112,14 @@ rejectionRate(mc)
 plot(mc)
 
 plot(window(mc, start=101))
+
+
+
+samps2 <- hmc.sample.lm(data=d, n.iter=1000, n.leap=80, eps=sqrt(diag(cov(samps)))/2,
+                        M=diag(3)) ##cor(samps))
+
+mc2 <- mcmc(samps2)
+
+effectiveSize(window(mc2, start=201))
+
+rejectionRate(mc2)
