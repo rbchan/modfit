@@ -1,4 +1,4 @@
-# stats
+# modfit
 ## Exercises in statistical model fitting for grad students
 
 ### Overview
@@ -19,10 +19,7 @@ the files yourself by running 'knitr' on source code in this
 repository. Most keys will not be publically available. 
 
 
-### Caution
+### Disclaimer
 
 There are bound to be mistakes in the exercises. Please let me know if you find any and I will try to correct them.
 
-Disclaimer: Any opinions, findings, and conclusions or recommendations
-expressed in this material are those of the author(s) and do not
-necessarily reflect the views of the National Science Foundation. 
