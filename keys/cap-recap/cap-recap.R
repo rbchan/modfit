@@ -2,7 +2,7 @@
 
 N <- 30
 K <- 10  # nOccasions
-p <- 0.5
+p <- 0.1
 
 1 - (1-p)^K
 
@@ -20,8 +20,34 @@ y
 
 ## Summary stats
 rowSums(y)
-table(rowSums(y))
+(ytab <- table(rowSums(y)))
 colSums(y)
+
+
+
+nll_M0 <- function(pars) {
+  n0 <- exp(pars[1])
+  p <- plogis(pars[2])
+  n <- nrow(y)
+  N <- n+n0
+  ld_y <- sum(dbinom(y, 1, p, log=TRUE))
+  K <- ncol(y)
+  zeros <- rep(0, K)
+  ld_0 <- sum(dbinom(zeros, 1, p, log=TRUE))*n0
+  ll <- lgamma(N+1) - lgamma(n0+1) + ld_y + ld_0 # Multinomial likelihood
+  return(-ll)
+}
+
+
+fm_M0 <- optim(c(0,0), nll_M0, hessian=TRUE)
+exp(fm_M0$par[1])+nrow(y)  # Estimate of N
+plogis(fm_M0$par[2])       # Estimate of p
+
+
+(vcov_M0 <- solve(fm_M0$hessian))
+(SE_M0 <- sqrt(diag(vcov_M0)))
+
+
 
 
 ## Augment the data
