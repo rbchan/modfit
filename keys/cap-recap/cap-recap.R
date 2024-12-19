@@ -60,6 +60,25 @@ yAug
 
 
 
+nll_M0_DA <- function(pars) {
+  psi <- plogis(pars[1])
+  p <- plogis(pars[2])
+  ld_y_z0 <- rowSums(dbinom(yAug, 1, 0, log=TRUE))
+  ld_y_z1 <- rowSums(dbinom(yAug, 1, p, log=TRUE))
+  # Marginal log-like
+  ll <- sum(log(exp(ld_y_z0)*(1-psi) + exp(ld_y_z1)*psi))
+  return(-ll)
+}
+
+
+fm_M0_DA <- optim(c(1,1), nll_M0_DA, hessian=TRUE)
+plogis(fm_M0_DA$par[1])*M  # Estimate of N
+plogis(fm_M0_DA$par[2])    # Estimate of p
+
+
+(vcov_M0_DA <- solve(fm_M0_DA$hessian))
+(SE_M0_DA <- sqrt(diag(vcov_M0_DA)))
+
 
 ## JAGS
 
